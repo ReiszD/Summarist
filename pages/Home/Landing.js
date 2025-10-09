@@ -1,8 +1,14 @@
 import styles from "@/styles/Home.module.css";
+import Login from "./Login";
 import Image from "next/image";
 import landing__img from "@/summarist-home-page-main/assets/landing.png";
+import { useDispatch, useSelector } from "react-redux";
+import { openLogin, closeLogin } from "@/redux/loginSlice";
 
 export default function Landing() {
+  const dispatch = useDispatch();
+  const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
+
   return (
     <>
       <section className="landing">
@@ -21,7 +27,12 @@ export default function Landing() {
                   <br className={styles.remove__tablet} />
                   and even people who don’t like to read.
                 </div>
-                <button className={`${styles.btn} ${styles.home__cta__btn}`}>Login</button>
+                <button
+                  onClick={() => dispatch(openLogin())}
+                  className={`${styles.btn} ${styles.home__cta__btn}`}
+                >
+                  Login
+                </button>
               </div>
               <figure className={styles.landing__image__mask}>
                 <Image src={landing__img} alt="landing" />
@@ -30,6 +41,7 @@ export default function Landing() {
           </div>
         </div>
       </section>
+      {isLoginOpen && <Login onClose={() => dispatch(closeLogin())} />}
     </>
   );
 }
