@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
 import { addDoc, collection, getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -45,8 +45,44 @@ const login = async (email, password) => {
     }
 };
 
+const signInWithGoogle = async () => {
+    try {
+        const provider = new GoogleAuthProvider();
+        const res = await signInWithPopup(auth, provider);
+        const user = res.user;
+        await addDoc(collection,(db, "user"), {
+            uid: user.uid,
+            name: user.displayName,
+            authProvider: "google",
+            email: user.email,
+        });
+    } catch (error) {
+        console.log(error);
+        alert(error.message);
+    }
+}
+
+const signInAsGuest = async () => {
+    try {
+        const res = await signInAnonymously(auth);
+        const user = res.user;
+        await addDoc(collection(db, "user"), {
+            uid: user.uid,
+            name: "Guest User",
+            authProvider: "anonymous",
+            email: null,
+        });
+    } catch (error) {
+        console.log(error);
+        alert(error.message);
+        if (error.code === "auth/operation-not-allowed") {
+            alert("Anonymous sign-in hasn't been enabled for this project. Please enable it in the Firebase console.");
+        }
+    }
+};
+
 const logout = () => {
     signOut(auth);
 };
 
-export {auth, db, login, signup, logout}
+export {auth, db, login, signup, signInWithGoogle, signInAsGuest, logout}

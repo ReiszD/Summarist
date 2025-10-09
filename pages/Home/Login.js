@@ -1,9 +1,12 @@
 import styles from "@/styles/Login.module.css";
+import Image from "next/image";
+import google_icon from "@/summarist-home-page-main/assets/google.png";
+import { FaRegUser } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
-import { login, signup } from "@/firebase";
+import { login, signup, signInWithGoogle, signInAsGuest } from "@/firebase";
 
 export default function Login({ onClose }) {
-  const [signState, setSignState] = useState("Sign In");
+  const [signState, setSignState] = useState("Log in to Summarist");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,11 +22,22 @@ export default function Login({ onClose }) {
 
   const user_auth = async (event) => {
     event.preventDefault();
-    if (signState === "Sign In") {
+    if (signState === "Log in to Summarist") {
       await login(email, password);
     } else {
       await signup(name, email, password);
     }
+    onClose();
+  };
+
+  const handleGoogleSignIn = async () => {
+    await signInWithGoogle();
+    onClose();
+  };
+
+  const handleGuestSignIn = async () => {
+    await signInAsGuest();
+    onClose();
   };
 
   return (
@@ -35,8 +49,16 @@ export default function Login({ onClose }) {
               ✕
             </button>
             <h1>{signState}</h1>
+            <button className={styles.guest__btn} onClick={handleGuestSignIn}>
+                <FaRegUser />
+                Login as a Guest</button>
+            <hr className={styles.hr__text} data-content="OR" />
+            <button className={styles.google__btn} onClick={handleGoogleSignIn}>
+                <Image src={google_icon} alt="google" className={styles.google__img} />
+                Login with Google</button>
+            <hr className={styles.hr__text} data-content="OR" />
             <form>
-              {signState === "Sign Up" ? (
+              {signState === "Sign up to Summarist" ? (
                 <input
                   value={name}
                   onChange={(e) => {
@@ -76,12 +98,12 @@ export default function Login({ onClose }) {
               </div>
             </form>
             <div className={styles.form__switch}>
-              {signState === "Sign In" ? (
+              {signState === "Log in to Summarist" ? (
                 <p>
                   New To Summarist?{" "}
                   <span
                     onClick={() => {
-                      setSignState("Sign Up");
+                      setSignState("Sign up to Summarist");
                     }}
                   >
                     Sign Up Now
@@ -92,7 +114,7 @@ export default function Login({ onClose }) {
                   Already Have Account?{" "}
                   <span
                     onClick={() => {
-                      setSignState("Sign In");
+                      setSignState("Log in to Summarist");
                     }}
                   >
                     Sign In Now
