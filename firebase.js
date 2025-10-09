@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider, signInAnonymously } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider, signInAnonymously, sendPasswordResetEmail as firebaseSendPasswordResetEmail } from 'firebase/auth';
 import { addDoc, collection, getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -50,7 +50,7 @@ const signInWithGoogle = async () => {
         const provider = new GoogleAuthProvider();
         const res = await signInWithPopup(auth, provider);
         const user = res.user;
-        await addDoc(collection,(db, "user"), {
+        await addDoc(collection(db, "user"), {
             uid: user.uid,
             name: user.displayName,
             authProvider: "google",
@@ -81,8 +81,18 @@ const signInAsGuest = async () => {
     }
 };
 
+const sendPasswordReset = async (email) => {
+    try {
+        await firebaseSendPasswordResetEmail(auth, email);
+        alert("Password reset link sent! Check your email.");
+    } catch (error) {
+        console.error(error);
+        alert(error.message)
+    }
+};
+
 const logout = () => {
     signOut(auth);
 };
 
-export {auth, db, login, signup, signInWithGoogle, signInAsGuest, logout}
+export {auth, db, login, signup, signInWithGoogle, signInAsGuest, sendPasswordReset, logout}

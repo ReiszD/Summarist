@@ -162,6 +162,11 @@
     font-size: 13px;
 }
 
+.form__help span {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 .remember {
     display: flex;
     align-items: center;

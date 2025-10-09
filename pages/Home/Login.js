@@ -3,7 +3,7 @@ import Image from "next/image";
 import google_icon from "@/summarist-home-page-main/assets/google.png";
 import { FaRegUser } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
-import { login, signup, signInWithGoogle, signInAsGuest } from "@/firebase";
+import { login, signup, signInWithGoogle, signInAsGuest, sendPasswordReset } from "@/firebase";
 
 export default function Login({ onClose }) {
   const [signState, setSignState] = useState("Log in to Summarist");
@@ -40,6 +40,15 @@ export default function Login({ onClose }) {
     onClose();
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+        alert ("Please enter your email address to reset your password.");
+        return;
+    }
+    await sendPasswordReset(email);
+    onClose();
+  }
+
   return (
     <>
       <div className={styles.overlay}>
@@ -57,7 +66,7 @@ export default function Login({ onClose }) {
                 <Image src={google_icon} alt="google" className={styles.google__img} />
                 Login with Google</button>
             <hr className={styles.hr__text} data-content="OR" />
-            <form>
+            <form onSubmit={user_auth}>
               {signState === "Sign up to Summarist" ? (
                 <input
                   value={name}
@@ -66,6 +75,7 @@ export default function Login({ onClose }) {
                   }}
                   type="text"
                   placeholder="Your Name"
+                  required
                 />
               ) : (
                 <></>
@@ -77,6 +87,7 @@ export default function Login({ onClose }) {
                 }}
                 type="email"
                 placeholder="Email"
+                required
               />
               <input
                 value={password}
@@ -85,6 +96,7 @@ export default function Login({ onClose }) {
                 }}
                 type="password"
                 placeholder="Password"
+                required
               />
               <button className={styles.submit__btn} onClick={user_auth} type="submit">
                 {signState}
@@ -94,7 +106,13 @@ export default function Login({ onClose }) {
                   <input type="checkbox" />
                   <label htmlFor="">Remember Me</label>
                 </div>
-                <p>Need Help?</p>
+                {signState === "Log in to Summarist" ? (
+                    <p>
+                    <span onClick={handleForgotPassword}>Forgot Password?</span>
+                </p>
+                ): (
+                    <></>
+                )}
               </div>
             </form>
             <div className={styles.form__switch}>
