@@ -140,7 +140,7 @@ button:disabled {
   width: 100%;
 }
 
-.landing__image--mask {
+.landing__image__mask {
   width: 100%;
   display: flex;
   justify-content: flex-end;
