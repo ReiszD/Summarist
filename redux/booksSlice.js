@@ -47,6 +47,7 @@ const booksSlice = createSlice({
         const status = action.meta.arg;
         if (status === "selected") state.selected = action.payload;
         if (status === "recommended") state.recommended = action.payload;
+        if (status === "suggested") state.suggested = action.payload;
       })
       .addCase(fetchBooks.rejected, (state, action) => {
         state.loading = false;

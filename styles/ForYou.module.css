@@ -127,22 +127,22 @@
 }
 
 .for_you_recommended_books {
-    display: flex;
-    overflow-x: auto;
-    gap: 16px;
-    scroll-snap-type: mandatory;
-    scroll-snap-type: x;
-    margin-bottom: 32px;
+  display: flex;
+  flex-direction: row;  /* force horizontal */
+  flex-wrap: nowrap;    /* prevent stacking */
+  overflow-x: auto;
+  gap: 16px;
+  scroll-snap-type: x mandatory;  /* combine properly */
+  margin-bottom: 32px;
 }
 
 .for_you_recommended_books_link {
-    position: relative;
-    scroll-snap-align: start;
-    padding: 32px 12px 12px;
-    text-decoration: none;
-    border-radius: 4px;
-    max-width: 200px;
-    width: 100%;
+  flex: 0 0 auto; /* prevent shrinking */
+  max-width: 200px;
+  scroll-snap-align: start;
+  text-decoration: none;
+  padding: 32px 12px 12px;
+  border-radius: 4px;
 }
 
 .book__image__wrapper {

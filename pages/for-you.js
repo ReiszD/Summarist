@@ -6,15 +6,17 @@ import Recommended from "./ForYou/Recommended";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBooks } from "@/redux/booksSlice";
+import Suggested from "./ForYou/Suggested";
 
 export default function ForYou() {
   const dispatch = useDispatch();
-  const {selected, recommended, loading, error} = useSelector(
+  const {selected, recommended, suggested, loading, error} = useSelector(
     (state) => state.books
   );
   useEffect(() => {
     dispatch(fetchBooks("selected"));
     dispatch(fetchBooks("recommended"));
+    dispatch(fetchBooks("suggested"));
   }, [dispatch]);
 
   return (
@@ -25,7 +27,8 @@ export default function ForYou() {
         <div className={styles.for__you__container}>
           <div className={styles.for_you_wrapper}>
             <Selected selected={selected} />
-            <Recommended />
+            <Recommended recommended={recommended} />
+            <Suggested suggested={suggested} />
           </div>
         </div>
       </div>
