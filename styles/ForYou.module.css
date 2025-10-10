@@ -35,6 +35,7 @@
     padding: 24px;
     margin-bottom: 24px;
     gap: 24px;
+    text-decoration: none;
 }
 
 .selected__book__subtitle {
