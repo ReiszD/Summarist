@@ -5,7 +5,7 @@ import { FaRegUser } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
 import { login, signup, signInWithGoogle, signInAsGuest, sendPasswordReset } from "@/firebase";
 
-export default function Login({ onClose }) {
+export default function Login({ onClose, onLoginSuccess }) {
   const [signState, setSignState] = useState("Log in to Summarist");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -27,16 +27,19 @@ export default function Login({ onClose }) {
     } else {
       await signup(name, email, password);
     }
+    onLoginSuccess?.();
     onClose();
   };
 
   const handleGoogleSignIn = async () => {
     await signInWithGoogle();
+    onLoginSuccess?.();
     onClose();
   };
 
   const handleGuestSignIn = async () => {
     await signInAsGuest();
+    onLoginSuccess?.();
     onClose();
   };
 

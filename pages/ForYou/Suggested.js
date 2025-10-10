@@ -11,9 +11,16 @@ export default function Suggested({ suggested }) {
         <div className={styles.for_you_recommended_books}>
           {suggested.map((suggest) => (
             <a className={styles.for_you_recommended_books_link}>
+              {suggest.subscriptionRequired && (
+                <div className={styles.book__pill}>Premium</div>
+              )}
               <audio src="install later"></audio>
               <figure className={styles.book__image__wrapper}>
-                <img className={styles.book__image} src={suggest.imageLink} alt="img" />
+                <img
+                  className={styles.book__image}
+                  src={suggest.imageLink}
+                  alt="img"
+                />
               </figure>
               <div className={styles.recommended__book__title}>
                 {suggest.title}

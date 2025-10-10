@@ -8,8 +8,24 @@ import { IoIosSearch } from "react-icons/io";
 import { FiSettings } from "react-icons/fi";
 import { IoMdHelpCircleOutline } from "react-icons/io";
 import { FiLogOut } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+import { openLogin, closeLogin } from "@/redux/loginSlice";
+import { useState } from "react";
+import Login from "@/pages/Home/Login";
 
 export default function Sidebar() {
+  const dispatch = useDispatch();
+  const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLoginClick = () => {
+    if (!isLoggedIn) {
+      dispatch(openLogin());
+    } else {
+      setIsLoggedIn(false);
+    }
+  };
+
   return (
     <div className={styles.sidebar}>
       <div className={styles.sidebar__logo}>
@@ -77,9 +93,18 @@ export default function Sidebar() {
             <div className={styles.sidebar__icon__wrapper}>
               <FiLogOut />
             </div>
-            <div className={styles.sidebar__link__text}>
-              <div className={styles.sidebar__link__text}>Logout</div>
+            <div
+              className={styles.sidebar__link__text}
+              onClick={handleLoginClick}
+            >
+              {isLoggedIn ? "Logout" : "Login"}
             </div>
+            {isLoginOpen && (
+              <Login
+                onClose={() => dispatch(closeLogin())}
+                onLoginSuccess={() => setIsLoggedIn(true)}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -16,6 +16,9 @@ export default function Recommended({ recommended }) {
               className={styles.for_you_recommended_books_link}
               href="/"
             >
+              {recommend.subscriptionRequired && (
+                <div className={styles.book__pill}>Premium</div>
+              )}
               <audio src={recommend.audioLink}></audio>
               <figure className={styles.book__image__wrapper}>
                 <img
