@@ -54,6 +54,7 @@
 
 .active__tab {
     background-color: #2bd97c;
+    width: 8px;
 }
 
 .sidebar__link__line {

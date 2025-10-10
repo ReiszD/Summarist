@@ -14,6 +14,7 @@ import { useState } from "react";
 import Login from "@/pages/Home/Login";
 
 export default function Sidebar() {
+    const [activeTab, setActiveTab] = useState("For You");
   const dispatch = useDispatch();
   const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -35,9 +36,12 @@ export default function Sidebar() {
       </div>
       <div className={styles.sidebar__wrapper}>
         <div className={styles.sidebar__top}>
-          <a className={styles.sidebar__link__wrapper} href="/for-you">
+          <a className={`${styles.sidebar__link__wrapper} ${activeTab === "For You" ? styles.active__tab : ""}`} 
+          href="/for-you"
+          onClick={() => setActiveTab("For You")}
+          >
             <div
-              className={`${styles.sidebar__link__line} ${styles.active__tab}`}
+              className={styles.sidebar__link__line}
             ></div>
             <div className={styles.sidebar__icon__wrapper}>
               <GoHome />
