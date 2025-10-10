@@ -1,4 +1,6 @@
 import styles from "@/styles/ForYou.module.css";
+import { CiClock2 } from "react-icons/ci";
+import { CiStar } from "react-icons/ci";
 
 export default function Recommended({ recommended }) {
   return (
@@ -7,7 +9,7 @@ export default function Recommended({ recommended }) {
       <div className={styles.for_you_subtitle}>We think you'll like these</div>
 
       {Array.isArray(recommended) && recommended.length > 0 ? (
-        <div className={styles.for_you_recommended_books}> {/* <-- single container */}
+        <div className={styles.for_you_recommended_books}>
           {recommended.map((recommend) => (
             <a
               key={recommend.id}
@@ -34,11 +36,7 @@ export default function Recommended({ recommended }) {
               <div className={styles.recommended__book__details_wrapper}>
                 <div className={styles.recommended__book__details}>
                   <div className={styles.recommended__book__details_icon}>
-                    <img
-                      className={styles.recommended__book__details_img}
-                      src="book clock icon"
-                      alt="duration"
-                    />
+                    <CiClock2 />
                   </div>
                   <div className={styles.recommended__book__details_text}>
                     03:24
@@ -46,7 +44,7 @@ export default function Recommended({ recommended }) {
                 </div>
                 <div className={styles.recommended__book__details}>
                   <div className={styles.recommended__book__details_icon}>
-                    <img src="star icon" alt="star" />
+                    <CiStar />
                   </div>
                   <div className={styles.recommended__book__details_text}>
                     {recommend.averageRating}

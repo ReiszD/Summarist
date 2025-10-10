@@ -1,11 +1,20 @@
 import styles from "@/styles/Sidebar.module.css";
+import Image from "next/image";
+import logo from "@/summarist-home-page-main/assets/logo.png";
+import { GoHome } from "react-icons/go";
+import { TbBadge } from "react-icons/tb";
+import { RiBallPenLine } from "react-icons/ri";
+import { IoIosSearch } from "react-icons/io";
+import { FiSettings } from "react-icons/fi";
+import { IoMdHelpCircleOutline } from "react-icons/io";
+import { FiLogOut } from "react-icons/fi";
 
 export default function Sidebar() {
   return (
     <div className={styles.sidebar}>
-      <div className={styles.search__logo}>
+      <div className={styles.sidebar__logo}>
         <figure>
-          <img src="logo" alt="logo" />
+          <Image src={logo} alt="" />
         </figure>
       </div>
       <div className={styles.sidebar__wrapper}>
@@ -15,14 +24,14 @@ export default function Sidebar() {
               className={`${styles.sidebar__link__line} ${styles.active__tab}`}
             ></div>
             <div className={styles.sidebar__icon__wrapper}>
-              <img src="search icon" alt="icon" />
+              <GoHome />
             </div>
             <div className={styles.sidebar__link__text}>For You</div>
           </a>
           <a className={styles.sidebar__link__wrapper} href="/library">
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
-              <img src="search icon" alt="icon" />
+              <TbBadge />
             </div>
             <div className={styles.sidebar__link__text}>My Library</div>
           </a>
@@ -31,7 +40,7 @@ export default function Sidebar() {
           >
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
-              <img src="highlight icon" alt="icon" />
+              <RiBallPenLine />
             </div>
             <div className={styles.sidebar__link__text}>Highlights</div>
           </div>
@@ -40,7 +49,7 @@ export default function Sidebar() {
           >
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
-              <img src="search icon" alt="icon" />
+              <IoIosSearch />
             </div>
             <div className={styles.sidebar__link__text}>Search</div>
             <div className="search__icon"></div>
@@ -50,7 +59,7 @@ export default function Sidebar() {
           <a className={styles.sidebar__link__wrapper} href="/settings">
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
-              <img src="settings icon" alt="icon" />
+              <FiSettings />
             </div>
             <div className={styles.sidebar__link__text}>Settings</div>
           </a>
@@ -58,17 +67,19 @@ export default function Sidebar() {
             className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`}
           >
             <div className={styles.sidebar__link__line}></div>
-              <div className={styles.sidebar__icon__wrapper}>
-                <img src="help icon" alt="icon" />
-              </div>
-              <div className={styles.sidebar__link__text}>Help & Support</div>
+            <div className={styles.sidebar__icon__wrapper}>
+              <IoMdHelpCircleOutline />
+            </div>
+            <div className={styles.sidebar__link__text}>Help & Support</div>
           </div>
           <div className={styles.sidebar__link__wrapper}>
             <div className={styles.sidebar__link__line}></div>
-              <div className={styles.sidebar__icon__wrapper}>
-                <img src="logout icon" alt="icon" />
-              </div>
+            <div className={styles.sidebar__icon__wrapper}>
+              <FiLogOut />
+            </div>
+            <div className={styles.sidebar__link__text}>
               <div className={styles.sidebar__link__text}>Logout</div>
+            </div>
           </div>
         </div>
       </div>

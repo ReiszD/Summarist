@@ -45,6 +45,7 @@
     color: #032b41;
     margin-bottom: 8px;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .link__tag {
