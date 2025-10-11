@@ -1,12 +1,13 @@
 import '@/styles/globals.css'
 import { Provider } from "react-redux";
 import { store } from "@/redux/store";
-import Login from './Home/Login';
+import LoginWrapper from '@/components/LoginWrapper';
 
 export default function App({ Component, pageProps }) {
   return (
     <Provider store={store}>
       <Component {...pageProps} />
+      <LoginWrapper />
     </Provider>
 )
 }

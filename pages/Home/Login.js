@@ -4,12 +4,14 @@ import google_icon from "@/summarist-home-page-main/assets/google.png";
 import { FaRegUser } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
 import { login, signup, signInWithGoogle, signInAsGuest, sendPasswordReset } from "@/firebase";
+import { useRouter } from "next/router";
 
-export default function Login({ onClose, onLoginSuccess }) {
+export default function Login({ onClose, redirectTo='/' }) {
   const [signState, setSignState] = useState("Log in to Summarist");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const handleEscape = (event) => {
@@ -29,18 +31,21 @@ export default function Login({ onClose, onLoginSuccess }) {
     }
     onLoginSuccess?.();
     onClose();
+    router.push(redirectTo)
   };
 
   const handleGoogleSignIn = async () => {
     await signInWithGoogle();
     onLoginSuccess?.();
     onClose();
+    router.push(redirectTo)
   };
 
   const handleGuestSignIn = async () => {
     await signInAsGuest();
-    onLoginSuccess?.();
+    
     onClose();
+    router.push(redirectTo)
   };
 
   const handleForgotPassword = async () => {
