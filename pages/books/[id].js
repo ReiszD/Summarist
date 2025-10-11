@@ -13,6 +13,7 @@ import { CiClock2 } from "react-icons/ci";
 import { MdMicNone } from "react-icons/md";
 import { FaRegLightbulb } from "react-icons/fa6";
 import { LuBookOpenText } from "react-icons/lu";
+import Link from "next/link";
 
 export default function BookPage() {
   const router = useRouter();
@@ -39,26 +40,26 @@ export default function BookPage() {
   if (loading && !book) return <p>Loading...</p>;
   if (!book) return <p>Book not found.</p>;
 
-const handleRead = () => {
-  if (!currentUser) {
-    dispatch(openLogin(`/player/${id}`));
-  } else {
-    router.push(`/player/${id}`);
-  }
-};
+  const handleRead = () => {
+    if (!currentUser) {
+      dispatch(openLogin(`/player/${id}`));
+    } else {
+      router.push(`/player/${id}`);
+    }
+  };
 
-const handleListen = () => {
-  if (!currentUser) {
-    dispatch(openLogin(`/player/${id}?mode=audio`));
-  } else {
-    router.push(`/player/${id}?mode=audio`);
-  }
-};
+  const handleListen = () => {
+    if (!currentUser) {
+      dispatch(openLogin(`/player/${id}?mode=audio`));
+    } else {
+      router.push(`/player/${id}?mode=audio`);
+    }
+  };
 
-const tagsArray = Array.isArray(book.tags)
-  ? book.tags 
-  : typeof book.tags === "string"
-    ? book.tags.split(",").map(tag => tag.trim())
+  const tagsArray = Array.isArray(book.tags)
+    ? book.tags
+    : typeof book.tags === "string"
+    ? book.tags.split(",").map((tag) => tag.trim())
     : [];
 
   return (
@@ -117,24 +118,28 @@ const tagsArray = Array.isArray(book.tags)
                 </div>
               </div>
               <div className={styles.inner__book__read__btn_wrapper}>
-                <button
-                  className={styles.inner__book__read__btn}
-                  onClick={handleRead}
-                >
-                  <div className={styles.inner__book__read_icon}>
-                    <LuBookOpenText />
-                  </div>
-                  <div className="inner__book__read_text">Read</div>
-                </button>
-                <button
-                  className={styles.inner__book__read__btn}
-                  onClick={handleListen}
-                >
-                  <div className={styles.inner__book__read_icon}>
-                    <MdMicNone />
-                  </div>
-                  <div className="inner__book__read_text">Listen</div>
-                </button>
+                <Link href={`/player/${id}`}>
+                  <button
+                    className={styles.inner__book__read__btn}
+                    //   onClick={handleRead}
+                  >
+                    <div className={styles.inner__book__read_icon}>
+                      <LuBookOpenText />
+                    </div>
+                    <div className="inner__book__read_text">Read</div>
+                  </button>
+                </Link>
+                <Link href={`/player/${id}`}>
+                  <button
+                    className={styles.inner__book__read__btn}
+                    onClick={handleListen}
+                  >
+                    <div className={styles.inner__book__read_icon}>
+                      <MdMicNone />
+                    </div>
+                    <div className="inner__book__read_text">Listen</div>
+                  </button>
+                </Link>
               </div>
               <div className={styles.inner__book__bookmark}>
                 <div className={styles.inner__book__bookmark__icon}>
