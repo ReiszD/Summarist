@@ -7,12 +7,17 @@ import { useEffect, useState } from "react";
 import { fetchBookById } from "@/redux/booksSlice";
 import { openLogin } from "@/redux/loginSlice";
 import Login from "../Home/Login";
+import { TbBadge } from "react-icons/tb";
+import { CiStar } from "react-icons/ci";
+import { CiClock2 } from "react-icons/ci";
+import { MdMicNone } from "react-icons/md";
+import { FaRegLightbulb } from "react-icons/fa6";
+import { LuBookOpenText } from "react-icons/lu";
 
 export default function BookPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { id } = router.query;
-
   const { currentUser, isLoginOpen } = useSelector((state) => state.login);
   const { recommended, selected, suggested, currentBook, loading } =
     useSelector((state) => state.books);
@@ -20,7 +25,6 @@ export default function BookPage() {
   const allBooks = [...recommended, ...selected, ...(suggested || [])];
   const [book, setBook] = useState(null);
 
-  // fetch or find the book
   useEffect(() => {
     if (!id) return;
     const foundBook = allBooks.find((b) => b.id === id);
@@ -81,7 +85,7 @@ const tagsArray = Array.isArray(book.tags)
                 <div className={styles.inner__book__description_wrapper}>
                   <div className={styles.inner__book__description}>
                     <div className={styles.inner__book__icon}>
-                      <img src="star icon" alt="star" />
+                      <CiStar />
                     </div>
                     <div className="inner__book__overall__rating">
                       {book.averageRating}
@@ -92,19 +96,19 @@ const tagsArray = Array.isArray(book.tags)
                   </div>
                   <div className={styles.inner__book__description}>
                     <div className={styles.inner__book__icon}>
-                      <img src="clock icon" alt="clock" />
+                      <CiClock2 />
                     </div>
                     <div className="inner__book__duration">03:24</div>
                   </div>
                   <div className={styles.inner__book__description}>
                     <div className={styles.inner__book__icon}>
-                      <img src="audio icon" alt="audio" />
+                      <MdMicNone />
                     </div>
                     <div className="inner__book__type">Audio & Text</div>
                   </div>
                   <div className={styles.inner__book__description}>
                     <div className={styles.inner__book__icon}>
-                      <img src="light icon" alt="light" />
+                      <FaRegLightbulb />
                     </div>
                     <div className="inner__book__key_ideas">
                       {book.keyIdeas} Key Ideas
@@ -118,7 +122,7 @@ const tagsArray = Array.isArray(book.tags)
                   onClick={handleRead}
                 >
                   <div className={styles.inner__book__read_icon}>
-                    <img src="book icon" alt="book" />
+                    <LuBookOpenText />
                   </div>
                   <div className="inner__book__read_text">Read</div>
                 </button>
@@ -127,18 +131,14 @@ const tagsArray = Array.isArray(book.tags)
                   onClick={handleListen}
                 >
                   <div className={styles.inner__book__read_icon}>
-                    <img src="mic icon" alt="mic" />
+                    <MdMicNone />
                   </div>
                   <div className="inner__book__read_text">Listen</div>
                 </button>
               </div>
               <div className={styles.inner__book__bookmark}>
                 <div className={styles.inner__book__bookmark__icon}>
-                  <img
-                    src="save icon"
-                    alt="save"
-                    className={styles.icon__img}
-                  />
+                  <TbBadge />
                 </div>
                 <div className={styles.inner__book__bookmark__text}>
                   Add Title To My Library
@@ -154,7 +154,7 @@ const tagsArray = Array.isArray(book.tags)
                   </div>
                 ))}
               </div>
-              <div className={styles.inner__book__description}>
+              <div className={styles.inner__book__book_description}>
                 {book.bookDescription}
               </div>
               <h2 className={styles.inner__book__secondary__title}>
@@ -166,7 +166,7 @@ const tagsArray = Array.isArray(book.tags)
             </div>
             <div className={styles.inner__book__img_wrapper}>
               <figure className={styles.book__image__wrapper}>
-                <img src="book image" alt="book pic" />
+                <img src={book.imageLink} alt="book pic" />
               </figure>
             </div>
           </div>
