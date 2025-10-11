@@ -1,4 +1,5 @@
 import styles from "@/styles/ForYou.module.css";
+import Link from "next/link";
 import { CiClock2 } from "react-icons/ci";
 import { CiStar } from "react-icons/ci";
 
@@ -10,7 +11,8 @@ export default function Suggested({ suggested }) {
       {Array.isArray(suggested) && suggested.length > 0 ? (
         <div className={styles.for_you_recommended_books}>
           {suggested.map((suggest) => (
-            <a className={styles.for_you_recommended_books_link}>
+            <Link className={styles.for_you_recommended_books_link}
+            href={`/books/${suggest.id}`}>
               {suggest.subscriptionRequired && (
                 <div className={styles.book__pill}>Premium</div>
               )}
@@ -49,7 +51,7 @@ export default function Suggested({ suggested }) {
                   </div>
                 </div>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
       ) : (
