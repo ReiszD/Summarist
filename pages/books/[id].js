@@ -1,31 +1,43 @@
+// pages/books/[id].js
 import styles from "@/styles/Books.module.css";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 import { useRouter } from "next/router";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { fetchBookById } from "@/redux/booksSlice";
-import { openLogin } from "@/redux/loginSlice";
+import { openLogin, closeLogin } from "@/redux/loginSlice";
 import Login from "../Home/Login";
+import { auth } from "@/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { TbBadge } from "react-icons/tb";
-import { CiStar } from "react-icons/ci";
-import { CiClock2 } from "react-icons/ci";
+import { CiStar, CiClock2 } from "react-icons/ci";
 import { MdMicNone } from "react-icons/md";
 import { FaRegLightbulb } from "react-icons/fa6";
 import { LuBookOpenText } from "react-icons/lu";
-import Link from "next/link";
 
 export default function BookPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { id } = router.query;
-  const { currentUser, isLoginOpen } = useSelector((state) => state.login);
+
+  const { isLoginOpen } = useSelector((state) => state.login);
   const { recommended, selected, suggested, currentBook, loading } =
     useSelector((state) => state.books);
 
   const allBooks = [...recommended, ...selected, ...(suggested || [])];
   const [book, setBook] = useState(null);
 
+  // ✅ Track Firebase auth state directly
+  const [firebaseUser, setFirebaseUser] = useState(null);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setFirebaseUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch book if not found locally
   useEffect(() => {
     if (!id) return;
     const foundBook = allBooks.find((b) => b.id === id);
@@ -33,6 +45,7 @@ export default function BookPage() {
     else dispatch(fetchBookById(id));
   }, [id, allBooks, dispatch]);
 
+  // Update if currentBook changes
   useEffect(() => {
     if (currentBook && currentBook.id === id) setBook(currentBook);
   }, [currentBook, id]);
@@ -40,118 +53,86 @@ export default function BookPage() {
   if (loading && !book) return <p>Loading...</p>;
   if (!book) return <p>Book not found.</p>;
 
-  const handleRead = () => {
-    if (!currentUser) {
-      dispatch(openLogin(`/player/${id}`));
-    } else {
-      router.push(`/player/${id}`);
-    }
-  };
-
-  const handleListen = () => {
-    if (!currentUser) {
-      dispatch(openLogin(`/player/${id}?mode=audio`));
-    } else {
-      router.push(`/player/${id}?mode=audio`);
-    }
-  };
-
   const tagsArray = Array.isArray(book.tags)
     ? book.tags
     : typeof book.tags === "string"
     ? book.tags.split(",").map((tag) => tag.trim())
     : [];
 
+  // ✅ Handles Read and Listen buttons
+  const handleClick = (type = "listen") => {
+    if (!firebaseUser) {
+      sessionStorage.setItem("loginRedirect", type === "listen" ? `/player/${id}` : `/reader/${id}`);
+      dispatch(openLogin());
+      return;
+    }
+
+    // Navigate directly if logged in
+    router.push(type === "listen" ? `/player/${id}` : `/reader/${id}`);
+  };
+
   return (
     <div className={styles.books__wrapper}>
       {isLoginOpen && <Login onClose={() => dispatch(closeLogin())} />}
       <SearchBar />
       <Sidebar />
+
       <div className={styles.books__row}>
-        <audio src="install later"></audio>
         <div className={styles.books__container}>
           <div className={styles.inner__wrapper}>
             <div className={styles.inner__book}>
+              {/* Book Title & Author */}
               <div className={styles.inner__book__title}>
                 {book.title}
-                {book.subscriptionRequired && (
-                  <span className={styles.premium__badge}> (Premium)</span>
-                )}
+                {book.subscriptionRequired && <span className={styles.premium__badge}> (Premium)</span>}
               </div>
               <div className={styles.inner__book__author}>{book.author}</div>
-              <div className={styles.inner__book__subtitle}>
-                {book.subTitle}
-              </div>
+              <div className={styles.inner__book__subtitle}>{book.subTitle}</div>
+
+              {/* Book Info */}
               <div className={styles.inner__book__wrapper}>
-                <div className={styles.inner__book__description_wrapper}>
-                  <div className={styles.inner__book__description}>
-                    <div className={styles.inner__book__icon}>
-                      <CiStar />
-                    </div>
-                    <div className="inner__book__overall__rating">
-                      {book.averageRating}
-                    </div>
-                    <div className="inner__book__total__rating">
-                      {book.totalRating} Ratings
-                    </div>
-                  </div>
-                  <div className={styles.inner__book__description}>
-                    <div className={styles.inner__book__icon}>
-                      <CiClock2 />
-                    </div>
-                    <div className="inner__book__duration">03:24</div>
-                  </div>
-                  <div className={styles.inner__book__description}>
-                    <div className={styles.inner__book__icon}>
-                      <MdMicNone />
-                    </div>
-                    <div className="inner__book__type">Audio & Text</div>
-                  </div>
-                  <div className={styles.inner__book__description}>
-                    <div className={styles.inner__book__icon}>
-                      <FaRegLightbulb />
-                    </div>
-                    <div className="inner__book__key_ideas">
-                      {book.keyIdeas} Key Ideas
-                    </div>
-                  </div>
+              <div className={styles.inner__book__description_wrapper}>
+                <div className={styles.inner__book__description}>
+                  <CiStar /> {book.averageRating} ({book.totalRating} Ratings)
+                </div>
+                <div className={styles.inner__book__description}>
+                  <CiClock2 /> 03:24
+                </div>
+                <div className={styles.inner__book__description}>
+                  <MdMicNone /> Audio & Text
+                </div>
+                <div className={styles.inner__book__description}>
+                  <FaRegLightbulb /> {book.keyIdeas} Key Ideas
                 </div>
               </div>
+              </div>
+
+              {/* Read & Listen Buttons */}
               <div className={styles.inner__book__read__btn_wrapper}>
-                <Link href={`/player/${id}`}>
-                  <button
-                    className={styles.inner__book__read__btn}
-                    //   onClick={handleRead}
-                  >
-                    <div className={styles.inner__book__read_icon}>
-                      <LuBookOpenText />
-                    </div>
-                    <div className="inner__book__read_text">Read</div>
-                  </button>
-                </Link>
-                <Link href={`/player/${id}`}>
-                  <button
-                    className={styles.inner__book__read__btn}
-                    onClick={handleListen}
-                  >
-                    <div className={styles.inner__book__read_icon}>
-                      <MdMicNone />
-                    </div>
-                    <div className="inner__book__read_text">Listen</div>
-                  </button>
-                </Link>
+                <button
+                  type="button"
+                  className={styles.inner__book__read__btn}
+                  onClick={() => handleClick("read")}
+                >
+                  <LuBookOpenText />
+                  Read
+                </button>
+                <button
+                  type="button"
+                  className={styles.inner__book__read__btn}
+                  onClick={() => handleClick("listen")}
+                >
+                  <MdMicNone />
+                  Listen
+                </button>
               </div>
+
+              {/* Bookmark */}
               <div className={styles.inner__book__bookmark}>
-                <div className={styles.inner__book__bookmark__icon}>
-                  <TbBadge />
-                </div>
-                <div className={styles.inner__book__bookmark__text}>
-                  Add Title To My Library
-                </div>
+                <TbBadge /> Add Title To My Library
               </div>
-              <div className={styles.inner__book__secondary__title}>
-                What's it About
-              </div>
+
+              {/* Tags */}
               <div className={styles.inner__book__tags__wrapper}>
                 {tagsArray.map((tag, index) => (
                   <div key={index} className={styles.inner__book__tag}>
@@ -159,16 +140,18 @@ export default function BookPage() {
                   </div>
                 ))}
               </div>
+
+              {/* Book Description */}
               <div className={styles.inner__book__book_description}>
                 {book.bookDescription}
               </div>
-              <h2 className={styles.inner__book__secondary__title}>
-                About The Author
-              </h2>
+              <h2 className={styles.inner__book__secondary__title}>About The Author</h2>
               <div className={styles.inner__book__author__description}>
                 {book.authorDescription}
               </div>
             </div>
+
+            {/* Book Image */}
             <div className={styles.inner__book__img_wrapper}>
               <figure className={styles.book__image__wrapper}>
                 <img src={book.imageLink} alt="book pic" />
