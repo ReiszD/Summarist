@@ -10,20 +10,36 @@ import { IoMdHelpCircleOutline } from "react-icons/io";
 import { FiLogOut } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { openLogin, closeLogin } from "@/redux/loginSlice";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Login from "@/pages/Home/Login";
+import { useRouter } from "next/router";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase";
 
 export default function Sidebar() {
-    const [activeTab, setActiveTab] = useState("For You");
+  const [activeTab, setActiveTab] = useState("For You");
   const dispatch = useDispatch();
-  const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
-  const handleLoginClick = () => {
-    if (!isLoggedIn) {
-      dispatch(openLogin());
+  const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
+ const user = useSelector((state) => state?.user?.user || null);
+
+  // 👀 Optional: Debug user state
+  useEffect(() => {
+    console.log("Sidebar detected user:", user);
+  }, [user]);
+
+  const handleLoginClick = async () => {
+    if (user) {
+      try {
+        // ✅ Only sign out — Redux updates automatically via _app.js listener
+        await signOut(auth);
+      } catch (err) {
+        console.error("Logout failed:", err);
+      }
     } else {
-      setIsLoggedIn(false);
+      // ✅ If user not logged in → open login modal
+      dispatch(openLogin("/for-you"));
     }
   };
 
@@ -31,23 +47,26 @@ export default function Sidebar() {
     <div className={styles.sidebar}>
       <div className={styles.sidebar__logo}>
         <figure>
-          <Image src={logo} alt="" />
+          <Image src={logo} alt="Summarist Logo" />
         </figure>
       </div>
+
       <div className={styles.sidebar__wrapper}>
         <div className={styles.sidebar__top}>
-          <a className={`${styles.sidebar__link__wrapper} ${activeTab === "For You" ? styles.active__tab : ""}`} 
-          href="/for-you"
-          onClick={() => setActiveTab("For You")}
+          <a
+            className={`${styles.sidebar__link__wrapper} ${
+              activeTab === "For You" ? styles.active__tab : ""
+            }`}
+            href="/for-you"
+            onClick={() => setActiveTab("For You")}
           >
-            <div
-              className={styles.sidebar__link__line}
-            ></div>
+            <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
               <GoHome />
             </div>
             <div className={styles.sidebar__link__text}>For You</div>
           </a>
+
           <a className={styles.sidebar__link__wrapper} href="/library">
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
@@ -55,6 +74,7 @@ export default function Sidebar() {
             </div>
             <div className={styles.sidebar__link__text}>My Library</div>
           </a>
+
           <div
             className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`}
           >
@@ -64,6 +84,7 @@ export default function Sidebar() {
             </div>
             <div className={styles.sidebar__link__text}>Highlights</div>
           </div>
+
           <div
             className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`}
           >
@@ -72,10 +93,10 @@ export default function Sidebar() {
               <IoIosSearch />
             </div>
             <div className={styles.sidebar__link__text}>Search</div>
-            <div className="search__icon"></div>
           </div>
         </div>
-        <div className="sidebar__bottom">
+
+        <div className={styles.sidebar__bottom}>
           <a className={styles.sidebar__link__wrapper} href="/settings">
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
@@ -83,6 +104,7 @@ export default function Sidebar() {
             </div>
             <div className={styles.sidebar__link__text}>Settings</div>
           </a>
+
           <div
             className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`}
           >
@@ -92,6 +114,8 @@ export default function Sidebar() {
             </div>
             <div className={styles.sidebar__link__text}>Help & Support</div>
           </div>
+
+          {/* 🔥 LOGIN / LOGOUT */}
           <div className={styles.sidebar__link__wrapper}>
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
@@ -100,18 +124,20 @@ export default function Sidebar() {
             <div
               className={styles.sidebar__link__text}
               onClick={handleLoginClick}
+              style={{ cursor: "pointer" }}
             >
-              {isLoggedIn ? "Logout" : "Login"}
+              {user ? "Logout" : "Login"}
             </div>
-            {isLoginOpen && (
-              <Login
-                onClose={() => dispatch(closeLogin())}
-                onLoginSuccess={() => setIsLoggedIn(true)}
-              />
-            )}
           </div>
         </div>
       </div>
+
+      {isLoginOpen && (
+        <Login
+          onClose={() => dispatch(closeLogin())}
+          onLoginSuccess={() => router.push("/for-you")}
+        />
+      )}
     </div>
   );
 }
