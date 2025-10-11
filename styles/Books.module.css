@@ -12,3 +12,30 @@
     margin: 0 auto;
     padding: 0 24px;
 }
+
+.books__container {
+    padding: 40px 0;
+    width: 100%;
+}
+
+.inner__wrapper {
+    display: flex;
+    gap: 16px;
+}
+
+.inner__book {
+    width: 100%;
+}
+
+.inner__book__title,
+.premium__badge,
+.inner__book__author {
+    color: #032b41;
+    margin-bottom: 16px;
+    font-weight: 600;
+}
+
+.inner__book__title,
+.premium__badge {
+    font-size: 32px;
+}

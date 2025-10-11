@@ -11,9 +11,8 @@ export default function BookPage() {
   const { id } = router.query;
   const dispatch = useDispatch();
 
-  const { recommended, selected, suggested, currentBook, loading } = useSelector(
-    (state) => state.books
-  );
+  const { recommended, selected, suggested, currentBook, loading } =
+    useSelector((state) => state.books);
 
   const allBooks = [...recommended, ...selected, ...(suggested || [])];
   const [book, setBook] = useState(null);
@@ -46,11 +45,14 @@ export default function BookPage() {
       <Sidebar />
       <div className={styles.books__row}>
         <audio src="install later"></audio>
-        <div className="books__container">
-          <div className="inner__wrapper">
-            <div className="inner__book">
-              <div className="inner__book__title">
+        <div className={styles.books__container}>
+          <div className={styles.inner__wrapper}>
+            <div className={styles.inner__book}>
+              <div className={styles.inner__book__title}>
                 {book.title}
+                {book.subscriptionRequired && (
+                  <span className={styles.premium__badge}> (Premium)</span>
+                )}
               </div>
               <div className="inner__book__author">Dale Carnegie</div>
               <div className="inner__book__subtitle">
@@ -89,37 +91,43 @@ export default function BookPage() {
               </div>
               <div className="inner__book__read__btn_wrapper">
                 <button className="inner__book__read__btn">
-                    <div className="inner__book__read_icon">
-                        <img src="book icon" alt="book" />
-                    </div>
-                    <div className="inner__book__read_text">Read</div>
+                  <div className="inner__book__read_icon">
+                    <img src="book icon" alt="book" />
+                  </div>
+                  <div className="inner__book__read_text">Read</div>
                 </button>
                 <button className="inner__book__read__btn">
-                    <div className="inner__book__read_icon">
-                        <img src="mic icon" alt="mic" />
-                    </div>
-                    <div className="inner__book__read_text">Listen</div>
+                  <div className="inner__book__read_icon">
+                    <img src="mic icon" alt="mic" />
+                  </div>
+                  <div className="inner__book__read_text">Listen</div>
                 </button>
               </div>
               <div className="inner__book__bookmark">
                 <div className="inner__book__bookmark__icon">
-                    <img src="save icon" alt="save" />
+                  <img src="save icon" alt="save" />
                 </div>
-                <div className="inner__book__bookmark__text">Add Title To My Library</div>
+                <div className="inner__book__bookmark__text">
+                  Add Title To My Library
+                </div>
               </div>
-              <div className="inner__book__secondary__title">What's it About</div>
+              <div className="inner__book__secondary__title">
+                What's it About
+              </div>
               <div className="inner__book__tags__wrapper">
                 <div className="inner__book__tag">Communication Skills</div>
                 <div className="inner__book__tag">Technology & The Future</div>
               </div>
               <div className="inner__book__description">Description Text</div>
-              <h2 className="inner__book__secondary__title">About The Author</h2>
+              <h2 className="inner__book__secondary__title">
+                About The Author
+              </h2>
               <div className="inner__book__author__description">Author Bio</div>
             </div>
             <div className="inner__book__img_wrapper">
-                <figure className="book__image__wrapper">
-                    <img src="book image" alt="book pic" />
-                </figure>
+              <figure className="book__image__wrapper">
+                <img src="book image" alt="book pic" />
+              </figure>
             </div>
           </div>
         </div>
