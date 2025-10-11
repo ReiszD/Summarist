@@ -1,0 +1,14 @@
+.books__wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-left: 200px;
+    width: calc(100% - 200px);
+}
+
+.books__row {
+    max-width: 1070px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 24px;
+}

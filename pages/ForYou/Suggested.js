@@ -14,7 +14,7 @@ export default function Suggested({ suggested }) {
               {suggest.subscriptionRequired && (
                 <div className={styles.book__pill}>Premium</div>
               )}
-              <audio src="install later"></audio>
+              <audio src={suggest.audioLink}></audio>
               <figure className={styles.book__image__wrapper}>
                 <img
                   className={styles.book__image}

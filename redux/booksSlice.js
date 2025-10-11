@@ -19,11 +19,30 @@ export const fetchBooks = createAsyncThunk(
   }
 );
 
+// Fetch a single book by ID
+export const fetchBookById = createAsyncThunk(
+  "books/fetchBookById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await fetch(
+        `https://us-central1-summaristt.cloudfunctions.net/getBook?id=${id}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch book");
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.message || "Unknown error");
+    }
+  }
+);
+
 const booksSlice = createSlice({
   name: "books",
   initialState: {
     selected: [],
     recommended: [],
+    suggested: [],
+    currentBook: null,
     loading: false,
     error: null,
   },
@@ -52,6 +71,17 @@ const booksSlice = createSlice({
       .addCase(fetchBooks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Error fetching books";
+      })
+      .addCase(fetchBookById.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchBookById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentBook = action.payload;
+      })
+      .addCase(fetchBookById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Error fetching book";
       });
   },
 });
