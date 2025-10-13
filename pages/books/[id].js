@@ -2,9 +2,10 @@
 import styles from "@/styles/Books.module.css";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
+import { formatTime } from "@/components/formatTime";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { fetchBookById } from "@/redux/booksSlice";
 import { openLogin, closeLogin } from "@/redux/loginSlice";
 import Login from "../Home/Login";
@@ -27,6 +28,20 @@ export default function BookPage() {
 
   const allBooks = [...recommended, ...selected, ...(suggested || [])];
   const [book, setBook] = useState(null);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
+  }, [book]);
 
   // ✅ Track Firebase auth state directly
   const [firebaseUser, setFirebaseUser] = useState(null);
@@ -62,7 +77,10 @@ export default function BookPage() {
   // ✅ Handles Read and Listen buttons
   const handleClick = (type = "listen") => {
     if (!firebaseUser) {
-      sessionStorage.setItem("loginRedirect", type === "listen" ? `/player/${id}` : `/reader/${id}`);
+      sessionStorage.setItem(
+        "loginRedirect",
+        type === "listen" ? `/player/${id}` : `/reader/${id}`
+      );
       dispatch(openLogin());
       return;
     }
@@ -84,27 +102,37 @@ export default function BookPage() {
               {/* Book Title & Author */}
               <div className={styles.inner__book__title}>
                 {book.title}
-                {book.subscriptionRequired && <span className={styles.premium__badge}> (Premium)</span>}
+                {book.subscriptionRequired && (
+                  <span className={styles.premium__badge}> (Premium)</span>
+                )}
               </div>
               <div className={styles.inner__book__author}>{book.author}</div>
-              <div className={styles.inner__book__subtitle}>{book.subTitle}</div>
+              <div className={styles.inner__book__subtitle}>
+                {book.subTitle}
+              </div>
 
               {/* Book Info */}
               <div className={styles.inner__book__wrapper}>
-              <div className={styles.inner__book__description_wrapper}>
-                <div className={styles.inner__book__description}>
-                  <CiStar /> {book.averageRating} ({book.totalRating} Ratings)
+                <div className={styles.inner__book__description_wrapper}>
+                  <div className={styles.inner__book__description}>
+                    <CiStar /> {book.averageRating} ({book.totalRating} Ratings)
+                  </div>
+                  <div className={styles.inner__book__description}>
+                    <audio
+                      ref={audioRef}
+                      src={book.audioLink}
+                      preload="metadata"
+                      style={{ display: "none" }}
+                    />
+                    <CiClock2 /> {formatTime(duration)}
+                  </div>
+                  <div className={styles.inner__book__description}>
+                    <MdMicNone /> Audio & Text
+                  </div>
+                  <div className={styles.inner__book__description}>
+                    <FaRegLightbulb /> {book.keyIdeas} Key Ideas
+                  </div>
                 </div>
-                <div className={styles.inner__book__description}>
-                  <CiClock2 /> 03:24
-                </div>
-                <div className={styles.inner__book__description}>
-                  <MdMicNone /> Audio & Text
-                </div>
-                <div className={styles.inner__book__description}>
-                  <FaRegLightbulb /> {book.keyIdeas} Key Ideas
-                </div>
-              </div>
               </div>
 
               {/* Read & Listen Buttons */}
@@ -145,7 +173,9 @@ export default function BookPage() {
               <div className={styles.inner__book__book_description}>
                 {book.bookDescription}
               </div>
-              <h2 className={styles.inner__book__secondary__title}>About The Author</h2>
+              <h2 className={styles.inner__book__secondary__title}>
+                About The Author
+              </h2>
               <div className={styles.inner__book__author__description}>
                 {book.authorDescription}
               </div>
