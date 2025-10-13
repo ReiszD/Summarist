@@ -69,13 +69,13 @@ export default function Login({ onClose }) {
     try {
       await signInWithGoogle();
 
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          onClose?.();
-          handleRedirect();
-          unsubscribe();
-        }
-      });
+      // Redirect immediately
+      const redirectTo = sessionStorage.getItem("loginRedirect") || "/for-you";
+      router.push(redirectTo);
+      sessionStorage.removeItem("loginRedirect");
+
+      // Close modal after routing
+      onClose?.();
     } catch (err) {
       console.error(err);
       alert(err.message);

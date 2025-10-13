@@ -4,10 +4,32 @@ import Image from "next/image";
 import landing__img from "@/summarist-home-page-main/assets/landing.png";
 import { useDispatch, useSelector } from "react-redux";
 import { openLogin, closeLogin } from "@/redux/loginSlice";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase";
+import { useRouter } from "next/router";
 
 export default function Landing() {
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user?.user || null);
   const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
+
+  const handleLoginClick = (redirect = "/for-you") => {
+    if (!user) {
+      sessionStorage.setItem("loginRedirect", redirect);
+      dispatch(openLogin());
+    }
+  };
+
+  // Logout user
+  const handleLogoutClick = async () => {
+    if (user) {
+      try {
+        await signOut(auth); // Redux updates via _app.js listener
+      } catch (err) {
+        console.error("Logout failed:", err);
+      }
+    }
+  };
 
   return (
     <>
@@ -28,10 +50,10 @@ export default function Landing() {
                   and even people who don’t like to read.
                 </div>
                 <button
-                  onClick={() => dispatch(openLogin())}
+                  onClick={user ? handleLogoutClick : () => handleLoginClick("/for-you")}
                   className={`${styles.btn} ${styles.home__cta__btn}`}
                 >
-                  Login
+                  {user ? "Logout" : "Login"}
                 </button>
               </div>
               <figure className={styles.landing__image__mask}>
@@ -41,7 +63,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
-      {isLoginOpen && <Login onClose={() => dispatch(closeLogin())} />}
+       {isLoginOpen && !user && (
+        <Login onClose={() => dispatch(closeLogin())} />
+      )}
     </>
   );
 }
