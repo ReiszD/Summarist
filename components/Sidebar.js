@@ -76,7 +76,7 @@ export default function Sidebar({
             <div className={styles.sidebar__link__text}>For You</div>
           </a>
 
-          <a className={styles.sidebar__link__wrapper} href="/library">
+          <a className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`} href="/library">
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
               <TbBadge />

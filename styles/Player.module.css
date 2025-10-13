@@ -99,6 +99,9 @@
 .audio__controls__btn {
   border-radius: 50%;
   cursor: pointer;
+  background-color: #042330;
+  color: #fff;
+  border: none;
 }
 
 .controls__btn__img {
@@ -112,6 +115,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  color: #042330;
 }
 
 .audio__progress__wrapper {
@@ -133,4 +137,5 @@
   cursor: pointer;
   outline: none;
   appearance: none;
+  background: linear-gradient(to right, rgb(43, 217, 124) 0%, rgb(109, 120, 125));
 }
