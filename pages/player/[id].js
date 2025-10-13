@@ -11,6 +11,7 @@ import { GiPauseButton } from "react-icons/gi";
 import { MdOutlineForward10, MdOutlineReplay10 } from "react-icons/md";
 
 export default function Audio() {
+    const [fontSize, setFontSize] = useState("medium");
   const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
@@ -25,6 +26,39 @@ export default function Audio() {
   const [duration, setDuration] = useState(0);
 
   const audioRef = useRef(null);
+
+
+  useEffect(() => {
+    const savedSize = localStorage.getItem("bookFontSize");
+    if (savedSize) setFontSize(savedSize);
+  }, []);
+
+  // Update font size variable whenever it changes
+  useEffect(() => {
+    const content = document.querySelector(`.${styles.player__summary}`);
+    if (content) {
+      content.style.setProperty("--book-font-size", getFontSizeValue(fontSize));
+    }
+  }, [fontSize]);
+
+  const handleFontSizeChange = (size) => {
+    setFontSize(size);
+    localStorage.setItem("bookFontSize", size); // persist
+  };
+    const getFontSizeValue = (size) => {
+    switch (size) {
+      case "small":
+        return "16px";
+      case "medium":
+        return "20px";
+      case "large":
+        return "24px";
+      case "xl":
+        return "28px";
+      default:
+        return "16px";
+    }
+  };
 
   // Fetch book by ID
   useEffect(() => {
@@ -93,19 +127,13 @@ export default function Audio() {
     setCurrentTime(newTime);
   };
 
-//   const formatTime = (time) => {
-//     const mins = Math.floor(time / 60);
-//     const secs = Math.floor(time % 60);
-//     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-//   };
-
   if (loading && !book) return <p>Loading...</p>;
   if (!book) return <p>Book not found.</p>;
 
   return (
     <div className={styles.audio__wrapper}>
       <SearchBar />
-      <Sidebar />
+      <Sidebar showFontSizeControls onFontSizeChange={handleFontSizeChange} initialActiveTab={fontSize} />
       <div className={styles.player__summary}>
         <div className={styles.audio__book__summary}>
           <div className={styles.audio__book__summary__title}>{book.title}</div>

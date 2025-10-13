@@ -79,3 +79,48 @@
     width: 24px;
     height: 24px;
 }
+
+.sidebar__link__wrapper:last-child {
+    margin-bottom: 0;
+}
+
+.sidebar__font__size__wrapper {
+    display: flex;
+    margin-left: 24px;
+    gap: 8px;
+}
+
+.sidebar__font__size__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background-color: #f7faf9;
+}
+
+.sidebar__font__size__active {
+    border-bottom: 3px solid #2bd97c;
+}
+
+.font__size__icon__small {
+    width: 20px;
+    height: 20px;
+}
+
+.font__size__icon__medium {
+    width: 24px;
+    height: 24px;
+}
+
+.font__size__icon__large {
+    width: 28px;
+    height: 28px;
+}
+
+.font__size__icon__xlarge {
+    width: 32px;
+    height: 32px;
+}

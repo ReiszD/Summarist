@@ -5,6 +5,7 @@ import { GoHome } from "react-icons/go";
 import { TbBadge } from "react-icons/tb";
 import { RiBallPenLine } from "react-icons/ri";
 import { IoIosSearch } from "react-icons/io";
+import { RiFontSize } from "react-icons/ri";
 import { FiSettings } from "react-icons/fi";
 import { IoMdHelpCircleOutline } from "react-icons/io";
 import { FiLogOut } from "react-icons/fi";
@@ -16,13 +17,21 @@ import { useRouter } from "next/router";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase";
 
-export default function Sidebar() {
-  const [activeTab, setActiveTab] = useState("For You");
+export default function Sidebar({
+  showFontSizeControls = false,
+  onFontSizeChange,
+  initialActiveTab = "medium"
+}) {
+  const handleFontSizeClick = (size) => {
+    if (onFontSizeChange) onFontSizeChange(size); // notify parent
+    setActiveTab(size); // mark button as active
+  };
+  const [activeTab, setActiveTab] = useState(initialActiveTab);
   const dispatch = useDispatch();
   const router = useRouter();
 
   const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
- const user = useSelector((state) => state?.user?.user || null);
+  const user = useSelector((state) => state?.user?.user || null);
 
   // 👀 Optional: Debug user state
   useEffect(() => {
@@ -94,8 +103,45 @@ export default function Sidebar() {
             </div>
             <div className={styles.sidebar__link__text}>Search</div>
           </div>
+          {showFontSizeControls && (
+            <div
+              className={`${styles.sidebar__link__wrapper} ${styles.sidebar__font__size__wrapper}`}
+            >
+              <button
+                onClick={() => handleFontSizeClick("small")}
+                className={`${styles.sidebar__link__text} ${
+                  styles.sidebar__font__size__icon
+                } ${activeTab === "small" ? styles.sidebar__font__size__active : ""}`}
+              >
+                <RiFontSize className={styles.font__size__icon__small} />
+              </button>
+              <button
+                onClick={() => handleFontSizeClick("medium")}
+                className={`${styles.sidebar__link__text} ${
+                  styles.sidebar__font__size__icon
+                } ${activeTab === "medium" ? styles.sidebar__font__size__active : ""}`}
+              >
+                <RiFontSize className={styles.font__size__icon__medium} />
+              </button>
+              <button
+                onClick={() => handleFontSizeClick("large")}
+                className={`${styles.sidebar__link__text} ${
+                  styles.sidebar__font__size__icon
+                } ${activeTab === "large" ? styles.sidebar__font__size__active : ""}`}
+              >
+                <RiFontSize className={styles.font__size__icon__large} />
+              </button>
+              <button
+                onClick={() => handleFontSizeClick("xlarge")}
+                className={`${styles.sidebar__link__text} ${
+                  styles.sidebar__font__size__icon
+                } ${activeTab === "xlarge" ? styles.sidebar__font__size__active : ""}`}
+              >
+                <RiFontSize className={styles.font__size__icon__xlarge} />
+              </button>
+            </div>
+          )}
         </div>
-
         <div className={styles.sidebar__bottom}>
           <a className={styles.sidebar__link__wrapper} href="/settings">
             <div className={styles.sidebar__link__line}></div>
