@@ -2,8 +2,25 @@ import styles from "@/styles/ForYou.module.css";
 import { CiClock2 } from "react-icons/ci";
 import { CiStar } from "react-icons/ci";
 import Link from "next/link";
+import { formatTime } from "@/components/formatTime";
+import { useEffect, useRef, useState } from "react";
 
 export default function Recommended({ recommended }) {
+  const [durations, setDurations] = useState({});
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
+  }, [recommended]);
+
   return (
     <div>
       <div className={styles.for_you_title}>Recommended For You</div>
@@ -20,7 +37,17 @@ export default function Recommended({ recommended }) {
               {recommend.subscriptionRequired && (
                 <div className={styles.book__pill}>Premium</div>
               )}
-              <audio src={recommend.audioLink}></audio>
+              <audio
+                controls
+                src={recommend.audioLink || "/placeholder-audio.mp3"}
+                style={{ display: "none" }}
+                onLoadedMetadata={(e) =>
+                  setDurations((prev) => ({
+                    ...prev,
+                    [recommend.id]: e.target.duration || 0,
+                  }))
+                }
+              ></audio>
               <figure className={styles.book__image__wrapper}>
                 <img
                   className={styles.book__image}
@@ -43,7 +70,7 @@ export default function Recommended({ recommended }) {
                     <CiClock2 />
                   </div>
                   <div className={styles.recommended__book__details_text}>
-                    03:24
+                    {formatTime(durations[recommend.id] || 0)}
                   </div>
                 </div>
                 <div className={styles.recommended__book__details}>

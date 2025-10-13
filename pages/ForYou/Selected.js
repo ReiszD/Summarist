@@ -1,7 +1,24 @@
 import styles from "@/styles/ForYou.module.css";
 import { GiPlayButton } from "react-icons/gi";
+import { formatTime } from "@/components/formatTime";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 export default function Selected({ selected }) {
+  const [durations, setDurations] = useState({});
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
+  }, [selected]);
   return (
     <>
       <div className={styles.for__you__title}>Selected Just For You</div>
@@ -11,6 +28,13 @@ export default function Selected({ selected }) {
             <audio
               controls
               src={select.audioLink || "/placeholder-audio.mp3"}
+              style={{ display: "none" }}
+              onLoadedMetadata={(e) =>
+                setDurations((prev) => ({
+                  ...prev,
+                  [select.id]: e.target.duration || 0,
+                }))
+              }
             ></audio>
             <a className={styles.selected__book} href="/">
               <div className={styles.selected__book__subtitle}>
@@ -35,11 +59,13 @@ export default function Selected({ selected }) {
                   <div className={styles.selected__book__duration_wrapper}>
                     <div className={styles.selected__book__icon}>
                       <div className={styles.selected__book__image}>
-                        <GiPlayButton />
+                        <Link href={`player/${select.id}`}>
+                          <GiPlayButton className={styles.play__icon} />
+                        </Link>
                       </div>
                     </div>
                     <div className={styles.selected__book__duration}>
-                      3 min 23 sec
+                      {formatTime(durations[select.id] || 0).replace(":", " min ") + " sec"}
                     </div>
                   </div>
                 </div>

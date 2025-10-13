@@ -106,6 +106,10 @@
     padding: 4px 4px 4px 6px;
 }
 
+.play__icon {
+    color: #fff;
+}
+
 .selected__book__duration {
     font-size: 14px;
     font-weight: 500;

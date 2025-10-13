@@ -59,6 +59,7 @@
     align-items: center;
     justify-content: center;
     min-width: 180px;
+    text-decoration: none;
 }
 
 .settings__login__btn {

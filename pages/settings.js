@@ -6,6 +6,7 @@ import login__image from "@/summarist-home-page-main/assets/login.png";
 import { useSelector, useDispatch } from "react-redux";
 import { openLogin } from "@/redux/loginSlice"; // Adjust path if needed
 import Login from "./Home/Login"; // Adjust path if needed
+import Link from "next/link";
 
 export default function Settings() {
   const dispatch = useDispatch();
@@ -31,11 +32,12 @@ export default function Settings() {
                 <div className={styles.settings__text}>
                   {user.subscriptionPlan || "Free"}
                 </div>
-                <div
+                <Link
+                    href={'/choose-plan'}
                   className={`${styles.settings__btn} ${styles.settings__login__btn}`}
                 >
                   {user.subscriptionPlan === "Premium" ? "Manage" : "Upgrade"}
-                </div>
+                </Link>
               </div>
 
               <div className={styles.setting__content}>
