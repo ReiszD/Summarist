@@ -11,7 +11,7 @@ import { GiPauseButton } from "react-icons/gi";
 import { MdOutlineForward10, MdOutlineReplay10 } from "react-icons/md";
 
 export default function Audio() {
-    const [fontSize, setFontSize] = useState("medium");
+  const [fontSize, setFontSize] = useState("medium");
   const dispatch = useDispatch();
   const router = useRouter();
   const { id } = router.query;
@@ -26,7 +26,6 @@ export default function Audio() {
   const [duration, setDuration] = useState(0);
 
   const audioRef = useRef(null);
-
 
   useEffect(() => {
     const savedSize = localStorage.getItem("bookFontSize");
@@ -45,7 +44,7 @@ export default function Audio() {
     setFontSize(size);
     localStorage.setItem("bookFontSize", size); // persist
   };
-    const getFontSizeValue = (size) => {
+  const getFontSizeValue = (size) => {
     switch (size) {
       case "small":
         return "16px";
@@ -133,7 +132,11 @@ export default function Audio() {
   return (
     <div className={styles.audio__wrapper}>
       <SearchBar />
-      <Sidebar showFontSizeControls onFontSizeChange={handleFontSizeChange} initialActiveTab={fontSize} />
+      <Sidebar
+        showFontSizeControls
+        onFontSizeChange={handleFontSizeChange}
+        initialActiveTab={fontSize}
+      />
       <div className={styles.player__summary}>
         <div className={styles.audio__book__summary}>
           <div className={styles.audio__book__summary__title}>{book.title}</div>
@@ -198,6 +201,13 @@ export default function Audio() {
               className={styles.audio__progress__bar}
               value={duration ? (currentTime / duration) * 100 : 0}
               onChange={handleProgressChange}
+              style={{
+                background: `linear-gradient(to right, rgb(43, 217, 124) 0%, rgb(43, 217, 124) ${
+                  duration ? (currentTime / duration) * 100 : 0
+                }%, rgb(109, 120, 125) ${
+                  duration ? (currentTime / duration) * 100 : 0
+                }%, rgb(109, 120, 125) 100%)`,
+              }}
             />
             <div className={styles.audio__time}>{formatTime(duration)}</div>
           </div>

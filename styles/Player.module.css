@@ -130,12 +130,36 @@
 }
 
 .audio__progress__bar {
-  border-radius: 8px;
-  height: 4px;
-  max-width: 300px;
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
+  height: 4px;
+  border-radius: 8px;
+  background: rgb(109, 120, 125); /* fallback */
   cursor: pointer;
   outline: none;
+  transition: background 0.3s;
+}
+
+.audio__progress__bar::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 8px;
+  background: transparent; /* inline style will override */
+}
+
+.audio__progress__bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
   appearance: none;
-  background: linear-gradient(to right, rgb(43, 217, 124) 0%, rgb(109, 120, 125));
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgb(255, 255, 255);
+  border: none;
+  cursor: pointer;
+  margin-top: -4px; /* centers the thumb vertically */
+  transition: background 0.3s, transform 0.2s;
+}
+
+.audio__progress__bar::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }
