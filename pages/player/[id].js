@@ -1,3 +1,4 @@
+// pages/player/[id].js
 import styles from "@/styles/Player.module.css";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
@@ -6,9 +7,10 @@ import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef, useState } from "react";
 import { fetchBookById } from "@/redux/booksSlice";
-import { GiPlayButton } from "react-icons/gi";
-import { GiPauseButton } from "react-icons/gi";
+import { GiPlayButton, GiPauseButton } from "react-icons/gi";
 import { MdOutlineForward10, MdOutlineReplay10 } from "react-icons/md";
+import { auth, addBookToFinished } from "@/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function Audio() {
   const [fontSize, setFontSize] = useState("medium");
@@ -24,15 +26,94 @@ export default function Audio() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [firebaseUser, setFirebaseUser] = useState(null);
 
   const audioRef = useRef(null);
 
+  // Track Firebase user
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => setFirebaseUser(user));
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch book by ID
+  useEffect(() => {
+    if (!id) return;
+    const foundBook = allBooks.find((b) => b.id === id);
+    if (foundBook) setBook(foundBook);
+    else dispatch(fetchBookById(id));
+  }, [id, allBooks, dispatch]);
+
+  // Update when currentBook is fetched
+  useEffect(() => {
+    if (currentBook && currentBook.id === id) setBook(currentBook);
+  }, [currentBook, id]);
+
+  // Handle audio metadata, progress, and ended event
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+
+    const handleEnded = async () => {
+      if (firebaseUser && book) {
+        await addBookToFinished(firebaseUser.uid, book);
+        alert(`You finished "${book.title}"!`);
+      }
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [audioRef, firebaseUser, book]);
+
+  // Play/pause toggle
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) audio.pause();
+    else audio.play();
+
+    setIsPlaying(!isPlaying);
+  };
+
+  // Skip controls
+  const skipForward = () => {
+    if (audioRef.current)
+      audioRef.current.currentTime = Math.min(
+        audioRef.current.currentTime + 10,
+        duration
+      );
+  };
+
+  const skipBackward = () => {
+    if (audioRef.current)
+      audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
+  };
+
+  // Progress bar
+  const handleProgressChange = (e) => {
+    const newTime = (e.target.value / 100) * duration;
+    if (audioRef.current) audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  // Font size logic
   useEffect(() => {
     const savedSize = localStorage.getItem("bookFontSize");
     if (savedSize) setFontSize(savedSize);
   }, []);
 
-  // Update font size variable whenever it changes
   useEffect(() => {
     const content = document.querySelector(`.${styles.player__summary}`);
     if (content) {
@@ -42,8 +123,9 @@ export default function Audio() {
 
   const handleFontSizeChange = (size) => {
     setFontSize(size);
-    localStorage.setItem("bookFontSize", size); // persist
+    localStorage.setItem("bookFontSize", size);
   };
+
   const getFontSizeValue = (size) => {
     switch (size) {
       case "small":
@@ -59,73 +141,6 @@ export default function Audio() {
     }
   };
 
-  // Fetch book by ID
-  useEffect(() => {
-    if (!id) return;
-    const foundBook = allBooks.find((b) => b.id === id);
-    if (foundBook) setBook(foundBook);
-    else dispatch(fetchBookById(id));
-  }, [id, allBooks, dispatch]);
-
-  // Update when currentBook is fetched
-  useEffect(() => {
-    if (currentBook && currentBook.id === id) setBook(currentBook);
-  }, [currentBook, id]);
-
-  // Handle audio metadata and time updates
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-
-    return () => {
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-    };
-  }, [book]);
-
-  // Play/pause toggle
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    if (isPlaying) {
-      audio.pause();
-    } else {
-      audio.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  // Skip controls
-  const skipForward = () => {
-    if (audioRef.current)
-      audioRef.current.currentTime = Math.min(
-        audioRef.current.currentTime + 10,
-        duration
-      );
-  };
-
-  const skipBackward = () => {
-    if (audioRef.current)
-      audioRef.current.currentTime = Math.max(
-        audioRef.current.currentTime - 10,
-        0
-      );
-  };
-
-  // Progress bar
-  const handleProgressChange = (e) => {
-    const newTime = (e.target.value / 100) * duration;
-    audioRef.current.currentTime = newTime;
-    setCurrentTime(newTime);
-  };
-
   if (loading && !book) return <p>Loading...</p>;
   if (!book) return <p>Book not found.</p>;
 
@@ -137,15 +152,14 @@ export default function Audio() {
         onFontSizeChange={handleFontSizeChange}
         initialActiveTab={fontSize}
       />
+
       <div className={styles.player__summary}>
         <div className={styles.audio__book__summary}>
           <div className={styles.audio__book__summary__title}>{book.title}</div>
-          <div className={styles.audio__book__summary__text}>
-            {book.summary}
-          </div>
+          <div className={styles.audio__book__summary__text}>{book.summary}</div>
         </div>
 
-        <div className={styles.audio__player__wrapper}>
+     <div className={styles.audio__player__wrapper}>
           <audio ref={audioRef} src={book.audioLink}></audio>
 
           <div className={styles.audio__track__wrapper}>

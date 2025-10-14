@@ -215,8 +215,7 @@ export default function BookPage() {
               >
                 {isInLibrary ? (
                   <>
-                    <TbBadge style={{ color: "rgb(43, 217, 124)" }} /> Added to
-                    Library
+                    <TbBadge className={styles.added__bookmark__icon} /> Added to Library
                   </>
                 ) : (
                   <>

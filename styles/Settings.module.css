@@ -82,6 +82,10 @@
     color: #032b41;
 }
 
+.subscription__subtitle {
+    margin-top: 32px;
+}
+
 .settings__text {
     color: #032b41;
 }

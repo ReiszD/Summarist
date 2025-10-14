@@ -20,7 +20,7 @@ import { auth } from "@/firebase";
 export default function Sidebar({
   showFontSizeControls = false,
   onFontSizeChange,
-  initialActiveTab = "medium"
+  initialActiveTab = "medium",
 }) {
   const handleFontSizeClick = (size) => {
     if (onFontSizeChange) onFontSizeChange(size); // notify parent
@@ -52,6 +52,18 @@ export default function Sidebar({
     }
   };
 
+  useEffect(() => {
+    const path = router.pathname;
+
+    if (path === "/for-you") {
+      setActiveTab("For You");
+    } else if (path === "/library") {
+      setActiveTab("My Library");
+    } else if (path === "/settings") {
+      setActiveTab("Settings");
+    }
+  }, [router.pathname]);
+
   return (
     <div className={styles.sidebar}>
       <div className={styles.sidebar__logo}>
@@ -76,7 +88,13 @@ export default function Sidebar({
             <div className={styles.sidebar__link__text}>For You</div>
           </a>
 
-          <a className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`} href="/library">
+          <a
+            className={`${styles.sidebar__link__wrapper} ${
+              activeTab === "My Library" ? styles.active__tab : ""
+            }`}
+            href="/library"
+            onClick={() => setActiveTab("My Library")}
+          >
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
               <TbBadge />
@@ -111,7 +129,11 @@ export default function Sidebar({
                 onClick={() => handleFontSizeClick("small")}
                 className={`${styles.sidebar__link__text} ${
                   styles.sidebar__font__size__icon
-                } ${activeTab === "small" ? styles.sidebar__font__size__active : ""}`}
+                } ${
+                  activeTab === "small"
+                    ? styles.sidebar__font__size__active
+                    : ""
+                }`}
               >
                 <RiFontSize className={styles.font__size__icon__small} />
               </button>
@@ -119,7 +141,11 @@ export default function Sidebar({
                 onClick={() => handleFontSizeClick("medium")}
                 className={`${styles.sidebar__link__text} ${
                   styles.sidebar__font__size__icon
-                } ${activeTab === "medium" ? styles.sidebar__font__size__active : ""}`}
+                } ${
+                  activeTab === "medium"
+                    ? styles.sidebar__font__size__active
+                    : ""
+                }`}
               >
                 <RiFontSize className={styles.font__size__icon__medium} />
               </button>
@@ -127,7 +153,11 @@ export default function Sidebar({
                 onClick={() => handleFontSizeClick("large")}
                 className={`${styles.sidebar__link__text} ${
                   styles.sidebar__font__size__icon
-                } ${activeTab === "large" ? styles.sidebar__font__size__active : ""}`}
+                } ${
+                  activeTab === "large"
+                    ? styles.sidebar__font__size__active
+                    : ""
+                }`}
               >
                 <RiFontSize className={styles.font__size__icon__large} />
               </button>
@@ -135,7 +165,11 @@ export default function Sidebar({
                 onClick={() => handleFontSizeClick("xlarge")}
                 className={`${styles.sidebar__link__text} ${
                   styles.sidebar__font__size__icon
-                } ${activeTab === "xlarge" ? styles.sidebar__font__size__active : ""}`}
+                } ${
+                  activeTab === "xlarge"
+                    ? styles.sidebar__font__size__active
+                    : ""
+                }`}
               >
                 <RiFontSize className={styles.font__size__icon__xlarge} />
               </button>
@@ -143,7 +177,13 @@ export default function Sidebar({
           )}
         </div>
         <div className={styles.sidebar__bottom}>
-          <a className={styles.sidebar__link__wrapper} href="/settings">
+          <a
+            className={`${styles.sidebar__link__wrapper} ${
+              activeTab === "Settings" ? styles.active__tab : ""
+            }`}
+            href="/settings"
+            onClick={() => setActiveTab("Settings")}
+          >
             <div className={styles.sidebar__link__line}></div>
             <div className={styles.sidebar__icon__wrapper}>
               <FiSettings />

@@ -192,6 +192,40 @@ export const removeBookFromLibrary = async (uid, bookId) => {
   }
 };
 
+// Add finished book to user's finished collection
+export const addBookToFinished = async (uid, book) => {
+  try {
+    await setDoc(doc(db, "users", uid, "finished", book.id), {
+      bookId: book.id,
+      title: book.title,
+      author: book.author,
+      imageLink: book.imageLink,
+      subTitle: book.subTitle || "",
+      subscriptionRequired: book.subscriptionRequired || false,
+      audioLink: book.audioLink || "",
+      averageRating: book.averageRating || 0,
+      finishedAt: new Date(),
+    });
+
+    // Mark to trigger real-time update in library
+    localStorage.setItem("finishedUpdated", true);
+  } catch (error) {
+    console.error("Error marking book as finished:", error);
+  }
+};
+
+// Get all finished books for a user
+export const getUserFinished = async (uid) => {
+  try {
+    const finishedRef = collection(db, "users", uid, "finished");
+    const snapshot = await getDocs(finishedRef);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Error fetching finished books:", error);
+    return [];
+  }
+};
+
 // ----------------------- Export -----------------------
 
 export {

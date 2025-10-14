@@ -4,8 +4,8 @@ import Sidebar from "@/components/Sidebar";
 import Image from "next/image";
 import login__image from "@/summarist-home-page-main/assets/login.png";
 import { useSelector, useDispatch } from "react-redux";
-import { openLogin } from "@/redux/loginSlice"; // Adjust path if needed
-import Login from "./Home/Login"; // Adjust path if needed
+import { openLogin } from "@/redux/loginSlice";
+import Login from "./Home/Login";
 import Link from "next/link";
 
 export default function Settings() {
@@ -26,17 +26,17 @@ export default function Settings() {
             // Logged-in user → show subscription info and email
             <>
               <div className={styles.setting__content}>
-                <div className={styles.settings__subtitle}>
+                <div className={`${styles.settings__subtitle} ${styles.subscription__subtitle}`}>
                   Your Subscription Plan
                 </div>
                 <div className={styles.settings__text}>
-                  {user.subscriptionPlan || "Free"}
+                  {user.subscriptionPlan || "Basic"}
                 </div>
                 <Link
                     href={'/choose-plan'}
                   className={`${styles.settings__btn} ${styles.settings__login__btn}`}
                 >
-                  {user.subscriptionPlan === "Premium" ? "Manage" : "Upgrade"}
+                  {user.subscriptionPlan === "Premium" ? "Manage" : "Upgrade to Premium"}
                 </Link>
               </div>
 
