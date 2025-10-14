@@ -9,8 +9,13 @@ import { useEffect, useState, useRef } from "react";
 import { fetchBookById } from "@/redux/booksSlice";
 import { openLogin, closeLogin } from "@/redux/loginSlice";
 import Login from "../Home/Login";
-import { auth } from "@/firebase";
-import { getUserSubscription } from "@/firebase";
+import {
+  auth,
+  addBookToLibrary,
+  removeBookFromLibrary,
+  getUserSubscription,
+  getUserLibrary,
+} from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { TbBadge } from "react-icons/tb";
 import { CiStar, CiClock2 } from "react-icons/ci";
@@ -22,7 +27,6 @@ export default function BookPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { id } = router.query;
-
   const { isLoginOpen } = useSelector((state) => state.login);
   const { recommended, selected, suggested, currentBook, loading } =
     useSelector((state) => state.books);
@@ -31,39 +35,75 @@ export default function BookPage() {
   const [book, setBook] = useState(null);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef(null);
+  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [isInLibrary, setIsInLibrary] = useState(false);
 
+  // ----------------------- Audio Duration -----------------------
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
     const handleLoadedMetadata = () => setDuration(audio.duration || 0);
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-
-    return () => {
+    return () =>
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-    };
   }, [book]);
 
-  // ✅ Track Firebase auth state directly
-  const [firebaseUser, setFirebaseUser] = useState(null);
+  // ----------------------- Auth Listener -----------------------
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
+
+      if (user && book?.id) {
+        // Check if book is in library immediately after login
+        const savedBooks = await getUserLibrary(user.uid);
+        const exists = savedBooks.some((b) => b.bookId === book.id);
+        setIsInLibrary(exists);
+
+        // Also check premium
+        const premiumStatus = await getUserSubscription(user.uid);
+        setIsPremium(premiumStatus);
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [book?.id]);
 
-  const [isPremium, setIsPremium] = useState(false);
+  // ----------------------- Check Library & Premium -----------------------
   useEffect(() => {
-    if (!firebaseUser) return;
+    if (!firebaseUser || !book?.id) return;
 
-    // Fetch user's subscription status
-    getUserSubscription(firebaseUser.uid).then((status) => {
-      setIsPremium(status);
-    });
-  }, [firebaseUser]);
+    const checkLibraryAndPremium = async () => {
+      const savedBooks = await getUserLibrary(firebaseUser.uid);
+      setIsInLibrary(savedBooks.some((b) => b.bookId === book.id));
 
-  // Fetch book if not found locally
+      const premiumStatus = await getUserSubscription(firebaseUser.uid);
+      setIsPremium(premiumStatus);
+    };
+
+    checkLibraryAndPremium();
+  }, [firebaseUser, book]);
+
+  // ----------------------- Add/Remove Library -----------------------
+  const handleLibraryToggle = async () => {
+    if (!firebaseUser) {
+      dispatch(openLogin());
+      return;
+    }
+
+    if (isInLibrary) {
+      const confirmRemove = confirm("Remove this book from your library?");
+      if (!confirmRemove) return;
+
+      await removeBookFromLibrary(firebaseUser.uid, book.id);
+      setIsInLibrary(false);
+      return;
+    }
+
+    await addBookToLibrary(firebaseUser.uid, book);
+    setIsInLibrary(true);
+  };
+
+  // ----------------------- Fetch Book -----------------------
   useEffect(() => {
     if (!id) return;
     const foundBook = allBooks.find((b) => b.id === id);
@@ -71,7 +111,6 @@ export default function BookPage() {
     else dispatch(fetchBookById(id));
   }, [id, allBooks, dispatch]);
 
-  // Update if currentBook changes
   useEffect(() => {
     if (currentBook && currentBook.id === id) setBook(currentBook);
   }, [currentBook, id]);
@@ -85,7 +124,7 @@ export default function BookPage() {
     ? book.tags.split(",").map((tag) => tag.trim())
     : [];
 
-  // ✅ Handles Read and Listen buttons
+  // ----------------------- Read/Listen -----------------------
   const handleClick = (type = "listen") => {
     if (!firebaseUser) {
       sessionStorage.setItem(
@@ -96,18 +135,14 @@ export default function BookPage() {
       return;
     }
 
-    // Check for subscription
     if (book.subscriptionRequired && !isPremium) {
       const goToUpgrade = confirm(
         "This book requires a premium subscription. Do you want to upgrade?"
       );
-      if (goToUpgrade) {
-        router.push("/choose-plan"); // replace with your subscription page route
-      }
+      if (goToUpgrade) router.push("/choose-plan");
       return;
     }
 
-    // Navigate directly if logged in
     router.push(type === "listen" ? `/player/${id}` : `/reader/${id}`);
   };
 
@@ -121,9 +156,8 @@ export default function BookPage() {
         <div className={styles.books__container}>
           <div className={styles.inner__wrapper}>
             <div className={styles.inner__book}>
-              {/* Book Title & Author */}
               <div className={styles.inner__book__title}>
-                {book.title}
+                {book.title}{" "}
                 {book.subscriptionRequired && (
                   <span className={styles.premium__badge}> (Premium)</span>
                 )}
@@ -133,7 +167,6 @@ export default function BookPage() {
                 {book.subTitle}
               </div>
 
-              {/* Book Info */}
               <div className={styles.inner__book__wrapper}>
                 <div className={styles.inner__book__description_wrapper}>
                   <div className={styles.inner__book__description}>
@@ -160,32 +193,42 @@ export default function BookPage() {
               {/* Read & Listen Buttons */}
               <div className={styles.inner__book__read__btn_wrapper}>
                 <button
-                  type="button"
                   className={styles.inner__book__read__btn}
                   onClick={() => handleClick("read")}
                 >
-                  <LuBookOpenText />
-                  Read
+                  <LuBookOpenText /> Read
                 </button>
                 <button
-                  type="button"
                   className={styles.inner__book__read__btn}
                   onClick={() => handleClick("listen")}
                 >
-                  <MdMicNone />
-                  Listen
+                  <MdMicNone /> Listen
                 </button>
               </div>
 
-              {/* Bookmark */}
-              <div className={styles.inner__book__bookmark}>
-                <TbBadge /> Add Title To My Library
+              {/* Add to Library */}
+              <div
+                className={`${styles.inner__book__bookmark} ${
+                  isInLibrary ? styles.added__bookmark : ""
+                }`}
+                onClick={handleLibraryToggle}
+              >
+                {isInLibrary ? (
+                  <>
+                    <TbBadge style={{ color: "rgb(43, 217, 124)" }} /> Added to
+                    Library
+                  </>
+                ) : (
+                  <>
+                    <TbBadge /> Add Title To My Library
+                  </>
+                )}
               </div>
 
               {/* Tags */}
               <div className={styles.inner__book__tags__wrapper}>
-                {tagsArray.map((tag, index) => (
-                  <div key={index} className={styles.inner__book__tag}>
+                {tagsArray.map((tag, i) => (
+                  <div key={i} className={styles.inner__book__tag}>
                     {tag}
                   </div>
                 ))}
@@ -203,7 +246,6 @@ export default function BookPage() {
               </div>
             </div>
 
-            {/* Book Image */}
             <div className={styles.inner__book__img_wrapper}>
               <figure className={styles.book__image__wrapper}>
                 <img src={book.imageLink} alt="book pic" />
