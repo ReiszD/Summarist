@@ -30,6 +30,7 @@ export default function BookPage() {
   const [book, setBook] = useState(null);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef(null);
+  
 
   useEffect(() => {
     const audio = audioRef.current;

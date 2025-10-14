@@ -29,7 +29,8 @@
 .selected__book {
     display: flex;
     justify-content: space-between;
-    width: calc((100% / 3) * 2);
+    width: 100%;
+    /* width: calc((100% / 3) * 2); */
     background-color: #fbefd6;
     border-radius: 4px;
     padding: 24px;
