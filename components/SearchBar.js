@@ -1,7 +1,10 @@
 import styles from "@/styles/SearchBar.module.css";
 import { useState, useEffect, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
+import { MdClear } from "react-icons/md";
 import { useRouter } from "next/router";
+import { CiClock2 } from "react-icons/ci";
+import { formatTime } from "@/components/formatTime";
 
 export default function SearchBar() {
   const [search, setSearch] = useState("");
@@ -10,6 +13,8 @@ export default function SearchBar() {
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const router = useRouter();
   const wrapperRef = useRef(null);
+  const [durations, setDurations] = useState({});
+  const audioRef = useRef(null);
 
   // Fetch books based on search term
   async function fetchBooks(query) {
@@ -42,6 +47,18 @@ export default function SearchBar() {
     }, 300);
 
     return () => clearTimeout(handler);
+  }, [search]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleLoadedMetadata = () => setDurations(audio.duration || 0);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
   }, [search]);
 
   // Navigate to a book
@@ -105,27 +122,67 @@ export default function SearchBar() {
                 onChange={(event) => setSearch(event.target.value)}
                 onKeyDown={handleKeyDown}
               />
-              <div
-                className={styles.search__icon}
-                onClick={handleEnterSearch}
-                aria-label="Search"
-              >
-                <IoIosSearch />
-              </div>
+              {search ? (
+                // Show clear icon when there's text
+                <div
+                  className={styles.clear__icon}
+                  onClick={() => setSearch("")}
+                  aria-label="Clear"
+                >
+                  <MdClear />
+                </div>
+              ) : (
+                // Show search icon when empty
+                <div
+                  className={styles.search__icon}
+                  onClick={handleEnterSearch}
+                  aria-label="Search"
+                >
+                  <IoIosSearch />
+                </div>
+              )}
             </div>
             {showDropdown && (
               <ul className={styles.results}>
                 {books.map((book, index) => (
                   <li
                     key={book.id}
-                    className={`${styles.resultItem} ${
+                    className={`${styles.result__item} ${
                       index === highlightIndex ? styles.highlight : ""
                     }`}
                     onMouseEnter={() => setHighlightIndex(index)}
                     onClick={() => handleSelectBook(book.id)}
                   >
-                    <div className={styles.resultTitle}>{book.title}</div>
-                    <div className={styles.resultAuthor}>{book.author}</div>
+                    <figure className={styles.results__image__wrapper}>
+                      <img
+                        className={styles.results__book__image}
+                        src={book.imageLink}
+                        alt={book.title}
+                      />
+                    </figure>
+                    <div className={styles.results__description}>
+                      <div className={styles.result__title}>{book.title}</div>
+                      <div className={styles.result__author}>{book.author}</div>
+                      <div className={styles.results__details__info}>
+                        <audio
+                          controls
+                          src={book.audioLink || "/placeholder-audio.mp3"}
+                          style={{ display: "none" }}
+                          onLoadedMetadata={(e) =>
+                            setDurations((prev) => ({
+                              ...prev,
+                              [book.id]: e.target.duration || 0,
+                            }))
+                          }
+                        ></audio>
+                        <div className={styles.results__details_icon}>
+                          <CiClock2 />
+                        </div>
+                        <div className={styles.results__details_text}>
+                          {formatTime(durations[book.id] || 0)}
+                        </div>
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>
