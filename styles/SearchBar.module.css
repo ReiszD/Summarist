@@ -77,3 +77,42 @@
     height: 24px;
     color: #03314b;
 }
+
+.results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.resultItem {
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.resultItem:hover {
+  background: #f0f0f0;
+}
+
+.resultTitle {
+  font-weight: 600;
+}
+
+.resultAuthor {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.highlight {
+  background-color: #e0f7fa; /* Light highlight color */
+}
