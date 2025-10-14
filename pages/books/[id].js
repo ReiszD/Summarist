@@ -129,7 +129,7 @@ export default function BookPage() {
     if (!firebaseUser) {
       sessionStorage.setItem(
         "loginRedirect",
-        type === "listen" ? `/player/${id}` : `/reader/${id}`
+        type === `/player/${id}`
       );
       dispatch(openLogin());
       return;
@@ -143,7 +143,7 @@ export default function BookPage() {
       return;
     }
 
-    router.push(type === "listen" ? `/player/${id}` : `/reader/${id}`);
+    router.push(`/player/${id}`);
   };
 
   return (
@@ -194,7 +194,7 @@ export default function BookPage() {
               <div className={styles.inner__book__read__btn_wrapper}>
                 <button
                   className={styles.inner__book__read__btn}
-                  onClick={() => handleClick("read")}
+                  onClick={() => handleClick("listen")}
                 >
                   <LuBookOpenText /> Read
                 </button>

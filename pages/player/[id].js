@@ -134,10 +134,8 @@ export default function Audio() {
         return "20px";
       case "large":
         return "24px";
-      case "xl":
+      case "xlarge":
         return "28px";
-      default:
-        return "16px";
     }
   };
 
