@@ -42,6 +42,9 @@ export default function SearchBar() {
   return (
     <div className={styles.search__background}>
       <div className={styles.search__wrapper}>
+        <figure>
+          {/* <img src="logo" alt="logo" /> */}
+        </figure>
         <div className={styles.search__content}>
           <div className={styles.search}>
             <div className={styles.search__input__wrapper}>
@@ -55,13 +58,13 @@ export default function SearchBar() {
                   if (event.key === "Enter") onSearch();
                 }}
               />
-              <button
+              <div
                 className={styles.search__icon}
                 onClick={onSearch}
                 aria-label="Search"
               >
                 <IoIosSearch />
-              </button>
+              </div>
             </div>
           </div>
         </div>

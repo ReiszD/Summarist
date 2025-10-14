@@ -29,6 +29,7 @@ const signup = async (name, email, password) => {
             name,
             authProvider: "local",
             email,
+            premium: false,
         });
     } catch (error) {
         console.log(error);
@@ -55,7 +56,8 @@ const signInWithGoogle = async () => {
             name: user.displayName,
             authProvider: "google",
             email: user.email,
-        });
+            premium: false,
+        }, {merge: true});
     } catch (error) {
         console.log(error);
         alert(error.message);
@@ -71,7 +73,8 @@ const signInAsGuest = async () => {
             name: "Guest User",
             authProvider: "anonymous",
             email: null,
-        });
+            premium: false,
+        }, {merge: true});
     } catch (error) {
         console.log(error);
         alert(error.message);
@@ -95,4 +98,29 @@ const logout = () => {
     signOut(auth);
 };
 
-export {auth, db, login, signup, signInWithGoogle, signInAsGuest, sendPasswordReset, logout}
+// Get current user's subscription
+const getUserSubscription = async (uid) => {
+  try {
+    const userDoc = await getDoc(doc(db, "users", uid));
+    if (userDoc.exists()) {
+      return userDoc.data().premium || false;
+    }
+    return false;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
+// Upgrade user to premium
+const upgradeToPremium = async (uid) => {
+  try {
+    await updateDoc(doc(db, "users", uid), { premium: true });
+    alert("Successfully upgraded to premium!");
+  } catch (error) {
+    console.error(error);
+    alert("Failed to upgrade to premium.");
+  }
+};
+
+export {auth, db, login, signup, signInWithGoogle, signInAsGuest, sendPasswordReset, logout, getUserSubscription, upgradeToPremium}

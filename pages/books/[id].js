@@ -10,6 +10,7 @@ import { fetchBookById } from "@/redux/booksSlice";
 import { openLogin, closeLogin } from "@/redux/loginSlice";
 import Login from "../Home/Login";
 import { auth } from "@/firebase";
+import { getUserSubscription } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { TbBadge } from "react-icons/tb";
 import { CiStar, CiClock2 } from "react-icons/ci";
@@ -30,7 +31,6 @@ export default function BookPage() {
   const [book, setBook] = useState(null);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef(null);
-  
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -52,6 +52,16 @@ export default function BookPage() {
     });
     return () => unsubscribe();
   }, []);
+
+  const [isPremium, setIsPremium] = useState(false);
+  useEffect(() => {
+    if (!firebaseUser) return;
+
+    // Fetch user's subscription status
+    getUserSubscription(firebaseUser.uid).then((status) => {
+      setIsPremium(status);
+    });
+  }, [firebaseUser]);
 
   // Fetch book if not found locally
   useEffect(() => {
@@ -83,6 +93,17 @@ export default function BookPage() {
         type === "listen" ? `/player/${id}` : `/reader/${id}`
       );
       dispatch(openLogin());
+      return;
+    }
+
+    // Check for subscription
+    if (book.subscriptionRequired && !isPremium) {
+      const goToUpgrade = confirm(
+        "This book requires a premium subscription. Do you want to upgrade?"
+      );
+      if (goToUpgrade) {
+        router.push("/choose-plan"); // replace with your subscription page route
+      }
       return;
     }
 
