@@ -145,8 +145,11 @@
     position: absolute;
     width: 6px;
     height: 6px;
-    background-color: #000;
     border-radius: 50%;
+}
+
+.filled__dot {
+  background-color: #000;
 }
 
 .plan__card__title {

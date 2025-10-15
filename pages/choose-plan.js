@@ -6,8 +6,10 @@ import { IoIosPaper } from "react-icons/io";
 import { RiPlantFill } from "react-icons/ri";
 import { FaHandshake } from "react-icons/fa";
 import Accordion from "@/components/Accordian";
+import { useState } from "react";
 
 export default function Plan() {
+  const [activePlan, setActivePlan] = useState("");
   const accordionData = [
     {
       title: "How does the free 7-day trial work?",
@@ -83,10 +85,21 @@ export default function Plan() {
               Choose the plan that fits you
             </div>
             <div
-              className={`${styles.plan__card} ${styles.plan__card__active}`}
+              className={`${styles.plan__card} ${
+                activePlan === "Premium Plus Yearly"
+                  ? styles.plan__card__active
+                  : ""
+              }`}
+              onClick={() => setActivePlan("Premium Plus Yearly")}
             >
               <div className={styles.plan__card__circle}>
-                <div className={styles.plan__card__dot}></div>
+                <div
+                  className={`${styles.plan__card__dot} ${
+                    activePlan === "Premium Plus Yearly"
+                      ? styles.filled__dot
+                      : ""
+                  }`}
+                ></div>
               </div>
               <div className={styles.plan__card__content}>
                 <div className={styles.plan__card__title}>
@@ -101,8 +114,21 @@ export default function Plan() {
             <div className={styles.plan__card__separator}>
               <div className="plan__separator">or</div>
             </div>
-            <div className={styles.plan__card}>
-              <div className={styles.plan__card__circle}></div>
+            <div
+              className={`${styles.plan__card} ${
+                activePlan === "Premium Monthly"
+                  ? styles.plan__card__active
+                  : ""
+              }`}
+              onClick={() => setActivePlan("Premium Monthly")}
+            >
+              <div className={styles.plan__card__circle}>
+                <div
+                  className={`${styles.plan__card__dot} ${
+                    activePlan === "Premium Monthly" ? styles.filled__dot : ""
+                  }`}
+                ></div>
+              </div>
               <div className={styles.plan__card__content}>
                 <div className={styles.plan__card__title}>Premium Monthly</div>
                 <div className={styles.plan__card__price}>$9.99/moth</div>
@@ -111,13 +137,28 @@ export default function Plan() {
             </div>
             <div className={styles.plan__card__cta}>
               <span className={styles.btn__wrapper}>
-                <button className={styles.plan__btn}>
-                  Start Your Free 7-Day Trial
+                <button
+                  className={`${styles.plan__btn} ${
+                    activePlan ? styles.plan__btn__active : ""
+                  }`}
+                >
+                  {activePlan === "Premium Plus Yearly"
+                    ? "Start Your Free 7-Day Trial"
+                    : activePlan === "Premium Monthly"
+                    ? "Start Monthly Plan"
+                    : "Select a Plan"}
                 </button>
               </span>
-              <div className={styles.plan__disclaimer}>
-                Cancel your trial at any time before it ends, and you won't be
-                charged.
+              <div
+                className={`${styles.plan__disclaimer} ${
+                  activePlan ? styles.plan__disclaimer__active : ""
+                }`}
+              >
+                {activePlan === "Premium Plus Yearly"
+                  ? "Cancel your trial at any time before it ends, and you won't be charged."
+                  : activePlan === "Premium Monthly"
+                  ? "30-Day money back guarantee, no questions asked."
+                  : ""}
               </div>
             </div>
             <div className={styles.faq__wrapper}>
