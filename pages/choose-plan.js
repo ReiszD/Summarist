@@ -7,13 +7,9 @@ import { RiPlantFill } from "react-icons/ri";
 import { FaHandshake } from "react-icons/fa";
 import Accordion from "@/components/Accordian";
 import { useState } from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import { useSelector } from "react-redux"; // <- import Redux hook
 
 export default function Plan() {
   const [activePlan, setActivePlan] = useState("");
-  const user = useSelector((state) => state.user.user); // <- get user from Redux
-
   const accordionData = [
     {
       title: "How does the free 7-day trial work?",
@@ -37,39 +33,9 @@ export default function Plan() {
         "You will not be charged if you cancel your trial before its conclusion. While you will not have complete access to the entire Summarist library, you can still expand your knowledge with one curated book per day.",
     },
   ];
-
-  const stripePromise = loadStripe(
-    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  );
-
-  const handleCheckout = async () => {
-    if (!activePlan) return alert("Please select a plan first");
-    if (!user?.email) return alert("You must be logged in");
-
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: activePlan, userEmail: user.email }),
-      });
-
-      const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url; // redirect to Stripe Checkout
-      } else {
-        alert(data.error || "Something went wrong");
-      }
-    } catch (err) {
-      console.error("Checkout error:", err);
-      alert("Something went wrong during checkout");
-    }
-  };
-
   return (
     <div className={`${styles.plan__wrapper} ${styles.wrapper__full}`}>
       <div className={styles.plan}>
-        {/* Plan Header */}
         <div className={styles.plan__header__wrapper}>
           <div className={styles.plan__header}>
             <div className={styles.plan__title}>
@@ -87,8 +53,6 @@ export default function Plan() {
             </figure>
           </div>
         </div>
-
-        {/* Features */}
         <div className={styles.plan__row}>
           <div className={styles.plan__container}>
             <div className={styles.plan__features__wrapper}>
@@ -117,13 +81,9 @@ export default function Plan() {
                 </div>
               </div>
             </div>
-
-            {/* Plan Selection */}
             <div className={styles.features__section__title}>
               Choose the plan that fits you
             </div>
-
-            {/* Premium Plus Yearly */}
             <div
               className={`${styles.plan__card} ${
                 activePlan === "Premium Plus Yearly"
@@ -151,13 +111,9 @@ export default function Plan() {
                 </div>
               </div>
             </div>
-
-            {/* Separator */}
             <div className={styles.plan__card__separator}>
               <div className="plan__separator">or</div>
             </div>
-
-            {/* Premium Monthly */}
             <div
               className={`${styles.plan__card} ${
                 activePlan === "Premium Monthly"
@@ -175,16 +131,13 @@ export default function Plan() {
               </div>
               <div className={styles.plan__card__content}>
                 <div className={styles.plan__card__title}>Premium Monthly</div>
-                <div className={styles.plan__card__price}>$9.99/month</div>
+                <div className={styles.plan__card__price}>$9.99/moth</div>
                 <div className={styles.plan__card__text}>No trial included</div>
               </div>
             </div>
-
-            {/* CTA Button */}
             <div className={styles.plan__card__cta}>
               <span className={styles.btn__wrapper}>
                 <button
-                  onClick={handleCheckout}
                   className={`${styles.plan__btn} ${
                     activePlan ? styles.plan__btn__active : ""
                   }`}
@@ -208,15 +161,11 @@ export default function Plan() {
                   : ""}
               </div>
             </div>
-
-            {/* FAQ Accordion */}
             <div className={styles.faq__wrapper}>
               <Accordion items={accordionData} />
             </div>
           </div>
         </div>
-
-        {/* Footer */}
         <Footer />
       </div>
     </div>
