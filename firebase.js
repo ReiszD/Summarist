@@ -43,7 +43,8 @@ const signup = async (name, email, password) => {
   try {
     const res = await createUserWithEmailAndPassword(auth, email, password);
     const user = res.user;
-    await addDoc(collection(db, "users"), {
+    await setDoc(doc(db, "users", user.uid), {
+      // Changed from addDoc to setDoc(doc(db, "users", user.uid))
       uid: user.uid,
       name,
       authProvider: "local",
@@ -133,7 +134,9 @@ const getUserSubscription = async (uid) => {
   try {
     const userDoc = await getDoc(doc(db, "users", uid));
     if (userDoc.exists()) {
-      return userDoc.data().premium || false;
+      // Return the entire subscription object or just the premium status
+      const userData = userDoc.data();
+      return userData.premium ? (userData.subscriptionPlan || true) : false; // Return plan name if available, otherwise just true/false
     }
     return false;
   } catch (error) {

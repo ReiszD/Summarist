@@ -6,13 +6,22 @@ import { IoIosPaper } from "react-icons/io";
 import { RiPlantFill } from "react-icons/ri";
 import { FaHandshake } from "react-icons/fa";
 import Accordion from "@/components/Accordian";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
-import { useSelector } from "react-redux"; // <- import Redux hook
+import { useDispatch, useSelector } from "react-redux";
+import dynamic from "next/dynamic";
+import { openLogin, closeLogin } from "@/redux/loginSlice";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebase"; // keep your existing firebase.js imports
+
+const Login = dynamic(() => import("./Home/Login"), { ssr: false });
 
 export default function Plan() {
+  const dispatch = useDispatch();
   const [activePlan, setActivePlan] = useState("");
   const user = useSelector((state) => state.user.user); // <- get user from Redux
+  const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
+  const [isPremium, setIsPremium] = useState(user?.premium || false);
 
   const accordionData = [
     {
@@ -42,9 +51,26 @@ export default function Plan() {
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   );
 
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const unsub = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        setIsPremium(userData.premium || false);
+      }
+    });
+
+    return () => unsub();
+  }, [user?.uid]);
+
   const handleCheckout = async () => {
+    if (!user?.uid) {
+      dispatch(openLogin());
+      return;
+    }
+
     if (!activePlan) return alert("Please select a plan first");
-    if (!user?.email) return alert("You must be logged in");
 
     try {
       const res = await fetch("/api/checkout", {
@@ -58,11 +84,11 @@ export default function Plan() {
       if (data.url) {
         window.location.href = data.url; // redirect to Stripe Checkout
       } else {
-        alert(data.error || "Something went wrong");
+        alert(data.error || "Something went wrong with Stripe checkout");
       }
     } catch (err) {
-      console.error("Checkout error:", err);
-      alert("Something went wrong during checkout");
+      console.error("Stripe checkout error:", err);
+      alert(`Something went wrong during checkout: ${err.message}`);
     }
   };
 
@@ -188,8 +214,11 @@ export default function Plan() {
                   className={`${styles.plan__btn} ${
                     activePlan ? styles.plan__btn__active : ""
                   }`}
+                  disabled={isPremium} // optional: disable if already premium
                 >
-                  {activePlan === "Premium Plus Yearly"
+                  {isPremium
+                    ? "You are already Premium!"
+                    : activePlan === "Premium Plus Yearly"
                     ? "Start Your Free 7-Day Trial"
                     : activePlan === "Premium Monthly"
                     ? "Start Monthly Plan"
@@ -219,6 +248,7 @@ export default function Plan() {
         {/* Footer */}
         <Footer />
       </div>
+      {isLoginOpen && <Login onClose={() => dispatch(closeLogin())} />}
     </div>
   );
 }

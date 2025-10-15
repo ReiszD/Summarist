@@ -7,19 +7,17 @@ import { updateSubscriptionPlan } from "@/redux/userSlice";
 export default function Success() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { plan } = router.query; // Stripe passes ?plan=Premium
+  const { plan } = router.query;
 
   useEffect(() => {
+    if (!plan || !auth.currentUser) return;
+
     const handlePaymentSuccess = async () => {
-      if (auth.currentUser && plan) {
-        try {
-          // 1️⃣ Update Firestore
-          await upgradeToPlan(auth.currentUser.uid, plan);
-          // 2️⃣ Update Redux
-          dispatch(updateSubscriptionPlan(plan));
-        } catch (error) {
-          console.error("Failed to update subscription:", error);
-        }
+      try {
+        await upgradeToPlan(auth.currentUser.uid, plan);
+        dispatch(updateSubscriptionPlan(plan));
+      } catch (error) {
+        console.error("Failed to update subscription:", error);
       }
     };
 
@@ -31,7 +29,7 @@ export default function Success() {
   return (
     <div style={{ textAlign: "center", padding: "50px" }}>
       <h1>🎉 Payment Successful!</h1>
-      <p>Thank you for subscribing. Enjoy unlimited access!</p>
+      <p>Your subscription is now active.</p>
       <button
         onClick={handleBack}
         style={{
