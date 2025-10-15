@@ -30,13 +30,13 @@ export default function Settings() {
                   Your Subscription Plan
                 </div>
                 <div className={styles.settings__text}>
-                  {user.subscriptionPlan || "Basic"}
+                  {user.subscriptionPlan || "Premium"}
                 </div>
                 <Link
                     href={'/choose-plan'}
                   className={`${styles.settings__btn} ${styles.settings__login__btn}`}
                 >
-                  {user.subscriptionPlan === "Premium" ? "Manage" : "Upgrade to Premium"}
+                  {user.subscriptionPlan === "Premium" ? "Manage" : "Change Plan"}
                 </Link>
               </div>
 
