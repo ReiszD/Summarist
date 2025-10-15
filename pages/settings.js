@@ -30,7 +30,7 @@ export default function Settings() {
                   Your Subscription Plan
                 </div>
                 <div className={styles.settings__text}>
-                  {user.subscriptionPlan || "Premium"}
+                  {user.subscriptionPlan || "Basic"}
                 </div>
                 <Link
                     href={'/choose-plan'}

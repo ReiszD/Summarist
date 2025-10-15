@@ -13,10 +13,12 @@ import dynamic from "next/dynamic";
 import { openLogin, closeLogin } from "@/redux/loginSlice";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase"; // keep your existing firebase.js imports
+import { useRouter } from "next/router";
 
 const Login = dynamic(() => import("./Home/Login"), { ssr: false });
 
 export default function Plan() {
+  const router = useRouter();
   const dispatch = useDispatch();
   const [activePlan, setActivePlan] = useState("");
   const user = useSelector((state) => state.user.user); // <- get user from Redux
@@ -65,12 +67,14 @@ export default function Plan() {
   }, [user?.uid]);
 
   const handleCheckout = async () => {
-    if (!user?.uid) {
+    if (!activePlan) return alert("Please select a plan first");
+
+    // ✅ If user is not logged in, save redirect path and open login modal
+    if (!user?.email) {
+      sessionStorage.setItem("loginRedirect", "/choose-plan");
       dispatch(openLogin());
       return;
     }
-
-    if (!activePlan) return alert("Please select a plan first");
 
     try {
       const res = await fetch("/api/checkout", {
@@ -84,11 +88,11 @@ export default function Plan() {
       if (data.url) {
         window.location.href = data.url; // redirect to Stripe Checkout
       } else {
-        alert(data.error || "Something went wrong with Stripe checkout");
+        alert(data.error || "Something went wrong");
       }
     } catch (err) {
-      console.error("Stripe checkout error:", err);
-      alert(`Something went wrong during checkout: ${err.message}`);
+      console.error("Checkout error:", err);
+      alert("Something went wrong during checkout");
     }
   };
 
