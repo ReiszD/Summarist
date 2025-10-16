@@ -7,12 +7,35 @@ import { useSelector, useDispatch } from "react-redux";
 import { openLogin } from "@/redux/loginSlice";
 import Login from "./Home/Login";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebase";
 
 export default function Settings() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.user?.user || null);
   const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
+  const [subscriptionPlan, setSubscriptionPlan] = useState("Basic");
 
+  useEffect(() => {
+    if (!user?.uid) return;
+
+    const q = query(
+      collection(db, "customers", user.uid, "subscriptions"),
+      where("status", "in", ["trialing", "active"])
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const subData = snapshot.docs[0].data();
+        setSubscriptionPlan(subData?.role || "Premium");
+      } else {
+        setSubscriptionPlan("Basic");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user?.uid]);
   return (
     <div className={styles.settings__wrapper}>
       <SearchBar />
@@ -26,17 +49,17 @@ export default function Settings() {
             // Logged-in user → show subscription info and email
             <>
               <div className={styles.setting__content}>
-                <div className={`${styles.settings__subtitle} ${styles.subscription__subtitle}`}>
+                <div
+                  className={`${styles.settings__subtitle} ${styles.subscription__subtitle}`}
+                >
                   Your Subscription Plan
                 </div>
-                <div className={styles.settings__text}>
-                  {user.subscriptionPlan || "Basic"}
-                </div>
+                <div className={styles.settings__text}>{subscriptionPlan}</div>
                 <Link
-                    href={'/choose-plan'}
+                  href={"/choose-plan"}
                   className={`${styles.settings__btn} ${styles.settings__login__btn}`}
                 >
-                  {user.subscriptionPlan === "Premium" ? "Manage" : "Change Plan"}
+                  {subscriptionPlan === "Premium" ? "Manage" : "Change Plan"}
                 </Link>
               </div>
 

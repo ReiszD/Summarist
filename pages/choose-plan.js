@@ -11,8 +11,14 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useDispatch, useSelector } from "react-redux";
 import dynamic from "next/dynamic";
 import { openLogin, closeLogin } from "@/redux/loginSlice";
-import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/firebase"; // keep your existing firebase.js imports
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "@/firebase";
 import { useRouter } from "next/router";
 
 const Login = dynamic(() => import("./Home/Login"), { ssr: false });
@@ -21,31 +27,31 @@ export default function Plan() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [activePlan, setActivePlan] = useState("");
-  const user = useSelector((state) => state.user.user); // <- get user from Redux
+  const user = useSelector((state) => state.user.user);
   const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
-  const [isPremium, setIsPremium] = useState(user?.premium || false);
+  const [isPremium, setIsPremium] = useState(false);
 
   const accordionData = [
     {
       title: "How does the free 7-day trial work?",
       content:
-        "Begin your complimentary 7-day trial with a Summarist annual membership. You are under no obligation to continue your subscription, and you will only be billed when the trial period expires. With Premium access, you can learn at your own pace and as frequently as you desire, and you may terminate your subscription prior to the conclusion of the 7-day free trial.",
+        "Begin your complimentary 7-day trial with a Summarist annual membership. You are under no obligation to continue your subscription, and you will only be billed when the trial period expires.",
     },
     {
       title:
-        "Can I switch subscriptions from montly to yearly, or yearly to monthly?",
+        "Can I switch subscriptions from monthly to yearly, or yearly to monthly?",
       content:
         "While an annual plan is active, it is not feasible to switch to a monthly plan. However, once the current month ends, transitioning from a monthly plan to an annual plan is an option.",
     },
     {
       title: "What is included in the Premium plan?",
       content:
-        "Premium membership provides you with the ultimate Summarist experience, including unrestricted entry to many best-selling books high-quality audio, the ability to download titles for offline reading, and the option to send your reads to your Kindle.",
+        "Premium membership provides unrestricted access to many best-selling books, high-quality audio, offline downloads, and Kindle sync.",
     },
     {
       title: "Can I cancel during my trial subscription?",
       content:
-        "You will not be charged if you cancel your trial before its conclusion. While you will not have complete access to the entire Summarist library, you can still expand your knowledge with one curated book per day.",
+        "You will not be charged if you cancel your trial before its conclusion.",
     },
   ];
 
@@ -53,43 +59,66 @@ export default function Plan() {
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   );
 
+  // ✅ Firestore subscription listener (the *correct* premium check)
   useEffect(() => {
     if (!user?.uid) return;
 
-    const unsub = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        setIsPremium(userData.premium || false);
-      }
+    const q = query(
+      collection(db, "customers", user.uid, "subscriptions"),
+      where("status", "in", ["trialing", "active"])
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setIsPremium(!snapshot.empty);
     });
 
-    return () => unsub();
+    return unsubscribe;
   }, [user?.uid]);
+
+  // ✅ Redirect premium users away from plan page
+  useEffect(() => {
+    if (isPremium) {
+      router.push("/for-you");
+    }
+  }, [isPremium, router]);
 
   const handleCheckout = async () => {
     if (!activePlan) return alert("Please select a plan first");
 
-    // ✅ If user is not logged in, save redirect path and open login modal
-    if (!user?.email) {
+    if (!user?.uid) {
       sessionStorage.setItem("loginRedirect", "/choose-plan");
       dispatch(openLogin());
       return;
     }
 
     try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: activePlan, userEmail: user.email }),
-      });
+      const priceIdMap = {
+        "Premium Plus Yearly": process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY,
+        "Premium Monthly": process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY,
+      };
 
-      const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url; // redirect to Stripe Checkout
-      } else {
-        alert(data.error || "Something went wrong");
+      const priceId = priceIdMap[activePlan];
+      if (!priceId) {
+        alert("Invalid plan selected");
+        return;
       }
+
+      const checkoutSessionRef = await addDoc(
+        collection(db, "customers", user.uid, "checkout_sessions"),
+        {
+          price: priceId,
+          success_url: window.location.origin + "/success",
+          cancel_url: window.location.origin + "/choose-plan",
+          allow_promotion_codes: true,
+          trial_from_plan: activePlan === "Premium Plus Yearly",
+        }
+      );
+
+      onSnapshot(checkoutSessionRef, (snap) => {
+        const data = snap.data();
+        if (data?.error) alert(`An error occurred: ${data.error.message}`);
+        if (data?.url) window.location.assign(data.url);
+      });
     } catch (err) {
       console.error("Checkout error:", err);
       alert("Something went wrong during checkout");
@@ -118,9 +147,11 @@ export default function Plan() {
           </div>
         </div>
 
-        {/* Features */}
+        {/* Features + Plan Cards */}
         <div className={styles.plan__row}>
           <div className={styles.plan__container}>
+            {/* ... your existing UI below stays exactly the same ... */}
+
             <div className={styles.plan__features__wrapper}>
               <div className={styles.plan__features}>
                 <figure className={styles.plan__features__icon}>
@@ -242,14 +273,12 @@ export default function Plan() {
               </div>
             </div>
 
-            {/* FAQ Accordion */}
             <div className={styles.faq__wrapper}>
               <Accordion items={accordionData} />
             </div>
           </div>
         </div>
 
-        {/* Footer */}
         <Footer />
       </div>
       {isLoginOpen && <Login onClose={() => dispatch(closeLogin())} />}

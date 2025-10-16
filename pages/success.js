@@ -1,32 +1,33 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { useDispatch } from "react-redux";
-import { auth, upgradeToPlan } from "@/firebase";
-import { updateSubscriptionPlan } from "@/redux/userSlice";
+import { db } from "@/firebase";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { useSelector } from "react-redux";
 
 export default function Success() {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const { plan } = router.query;
+  const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
-    if (!plan || !auth.currentUser) return;
+    if (!user?.uid) return;
 
-    const handlePaymentSuccess = async () => {
-      try {
-        await upgradeToPlan(auth.currentUser.uid, plan);
-        dispatch(updateSubscriptionPlan(plan));
-      } catch (error) {
-        console.error("Failed to update subscription:", error);
-      }
-    };
+    const q = query(
+      collection(db, "customers", user.uid, "subscriptions"),
+      where("status", "in", ["trialing", "active"])
+    );
 
-    handlePaymentSuccess();
-  }, [plan, dispatch]);
+    const unsub = onSnapshot(q, (snapshot) => {
+      snapshot.docs.forEach((doc) => {
+        console.log("Active subscription:", doc.data());
+      });
+    });
+
+    return () => unsub();
+  }, [user?.uid]);
 
   const handleBack = () => router.push("/for-you");
 
-  return (
+    return (
     <div style={{ textAlign: "center", padding: "50px" }}>
       <h1>🎉 Payment Successful!</h1>
       <p>Your subscription is now active.</p>
