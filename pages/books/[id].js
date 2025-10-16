@@ -166,13 +166,32 @@ export default function BookPage() {
     router.push(`/player/${id}`);
   };
 
+    const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1000
+  );
+
+  // Update window width on resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const sidebarCollapsed = windowWidth < 550;
+
   const isLoading = !book;
 
   return (
-    <div className={styles.books__wrapper}>
+    <div
+      className={styles.books__wrapper}
+      style={{
+        marginLeft: sidebarCollapsed ? 0 : "200px",
+        width: sidebarCollapsed ? "100%" : "calc(100% - 200px)",
+      }}
+    >
       {isLoginOpen && <Login onClose={() => dispatch(closeLogin())} />}
       <SearchBar />
-      <Sidebar />
+      <Sidebar collapsed={sidebarCollapsed} />
 
       <div className={styles.books__row}>
         {isLoading ? (

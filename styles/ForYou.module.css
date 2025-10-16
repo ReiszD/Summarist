@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  margin-left: 200px;
+  margin-left: 200px; /* <-- always reserves space for sidebar */
   width: calc(100% - 200px);
 }
 
@@ -11,6 +11,9 @@
   width: 100%;
   margin: 0 auto;
   padding: 0 24px;
+  flex: 1; /* grow to fill space left by sidebar */
+  display: flex;
+  flex-direction: column;
 }
 
 .for__you__container {

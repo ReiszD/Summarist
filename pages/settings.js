@@ -57,10 +57,29 @@ export default function Settings() {
     return () => unsubscribe();
   }, [user?.uid]);
 
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1000
+  );
+
+  // Update window width on resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const sidebarCollapsed = windowWidth < 550;
+
   return (
-    <div className={styles.settings__wrapper}>
+    <div
+      className={styles.settings__wrapper}
+      style={{
+        marginLeft: sidebarCollapsed ? 0 : "200px",
+        width: sidebarCollapsed ? "100%" : "calc(100% - 200px)",
+      }}
+    >
       <SearchBar />
-      <Sidebar />
+      <Sidebar collapsed={sidebarCollapsed} />
 
       <div className={styles.settings__container}>
         <div className={styles.settings__row}>

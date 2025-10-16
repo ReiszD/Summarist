@@ -3,12 +3,10 @@ import Image from "next/image";
 import logo from "@/summarist-home-page-main/assets/logo.png";
 import { GoHome } from "react-icons/go";
 import { TbBadge } from "react-icons/tb";
-import { RiBallPenLine } from "react-icons/ri";
-import { IoIosSearch } from "react-icons/io";
-import { RiFontSize } from "react-icons/ri";
-import { FiSettings } from "react-icons/fi";
-import { IoMdHelpCircleOutline } from "react-icons/io";
-import { FiLogOut } from "react-icons/fi";
+import { RiBallPenLine, RiFontSize } from "react-icons/ri";
+import { IoIosSearch, IoMdClose, IoMdHelpCircleOutline } from "react-icons/io";
+import { FaBars } from "react-icons/fa";
+import { FiSettings, FiLogOut } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { openLogin, closeLogin } from "@/redux/loginSlice";
 import { useState, useEffect } from "react";
@@ -21,199 +19,177 @@ export default function Sidebar({
   showFontSizeControls = false,
   onFontSizeChange,
   initialActiveTab = "medium",
+  collapsed = false,
 }) {
-  const handleFontSizeClick = (size) => {
-    if (onFontSizeChange) onFontSizeChange(size); // notify parent
-    setActiveTab(size); // mark button as active
-  };
-  const [activeTab, setActiveTab] = useState(initialActiveTab);
   const dispatch = useDispatch();
   const router = useRouter();
+
+  const [activeTab, setActiveTab] = useState(initialActiveTab);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
   const user = useSelector((state) => state?.user?.user || null);
 
-  // 👀 Optional: Debug user state
-  useEffect(() => {
-    console.log("Sidebar detected user:", user);
-  }, [user]);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+
+  const handleFontSizeClick = (size) => {
+    if (onFontSizeChange) onFontSizeChange(size);
+    setActiveTab(size);
+  };
 
   const handleLoginClick = async () => {
     if (user) {
       try {
-        // ✅ Only sign out — Redux updates automatically via _app.js listener
         await signOut(auth);
       } catch (err) {
         console.error("Logout failed:", err);
       }
     } else {
-      // ✅ If user not logged in → open login modal
       dispatch(openLogin("/for-you"));
     }
+    setMenuOpen(false); // close mobile menu after login/logout
   };
 
   useEffect(() => {
     const path = router.pathname;
-
-    if (path === "/for-you") {
-      setActiveTab("For You");
-    } else if (path === "/library") {
-      setActiveTab("My Library");
-    } else if (path === "/settings") {
-      setActiveTab("Settings");
-    }
+    if (path === "/for-you") setActiveTab("For You");
+    else if (path === "/library") setActiveTab("My Library");
+    else if (path === "/settings") setActiveTab("Settings");
   }, [router.pathname]);
 
+  const linksTop = [
+    { label: "For You", icon: <GoHome />, href: "/for-you" },
+    { label: "My Library", icon: <TbBadge />, href: "/library" },
+    { label: "Highlights", icon: <RiBallPenLine />, disabled: true },
+    { label: "Search", icon: <IoIosSearch />, disabled: true },
+  ];
+
+  const linksBottom = [
+    { label: "Settings", icon: <FiSettings />, href: "/settings" },
+    {
+      label: "Help & Support",
+      icon: <IoMdHelpCircleOutline />,
+      disabled: true,
+    },
+    {
+      label: user ? "Logout" : "Login",
+      icon: <FiLogOut />,
+      onClick: handleLoginClick,
+    },
+  ];
+
+  const renderLink = ({ label, icon, href, disabled, onClick }) => {
+    const isActive = activeTab === label;
+    return (
+      <div
+        key={label}
+        className={`${styles.sidebar__link__wrapper} ${
+          isActive ? styles.active__tab : ""
+        } ${disabled ? styles.sidebar__link__not_allowed : ""}`}
+        onClick={() => {
+          if (href) router.push(href);
+          if (onClick) onClick();
+          if (!disabled) setActiveTab(label);
+          if (menuOpen) setMenuOpen(false);
+        }}
+      >
+        <div className={styles.sidebar__link__line}></div>
+        <div className={styles.sidebar__icon__wrapper}>{icon}</div>
+        <div className={styles.sidebar__link__text}>{label}</div>
+      </div>
+    );
+  };
+
   return (
-    <div className={styles.sidebar}>
-      <div className={styles.sidebar__logo}>
-        <figure>
-          <Image src={logo} alt="Summarist Logo" />
-        </figure>
+    <div
+      className={`${styles.sidebar} ${
+        collapsed ? styles.sidebar__collapsed : ""
+      }`}
+    >
+      <button className={styles.btn__menu} onClick={toggleMenu}>
+        {menuOpen ? <IoMdClose /> : <FaBars />}
+      </button>
+
+      {/* Mobile menu backdrop */}
+      <div
+        className={`${styles.sidebar__backdrop} ${menuOpen ? styles.open : ""}`}
+      >
+        <div className={styles.sidebar__menu}>
+          <div className={styles.sidebar__logo}>
+            <figure>
+              <Image src={logo} alt="Summarist Logo" />
+            </figure>
+          </div>
+          <div className={styles.sidebar__wrapper}>
+            <div className={styles.sidebar__top}>
+              {linksTop.map(renderLink)}
+              {showFontSizeControls && (
+                <div
+                  className={`${styles.sidebar__link__wrapper} ${styles.sidebar__font__size__wrapper}`}
+                >
+                  {["small", "medium", "large", "xlarge"].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => handleFontSizeClick(size)}
+                      className={`${styles.sidebar__link__text} ${
+                        styles.sidebar__font__size__icon
+                      } ${
+                        activeTab === size
+                          ? styles.sidebar__font__size__active
+                          : ""
+                      }`}
+                    >
+                      <RiFontSize
+                        className={styles[`font__size__icon__${size}`]}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className={styles.sidebar__bottom}>
+              {linksBottom.map(renderLink)}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className={styles.sidebar__wrapper}>
-        <div className={styles.sidebar__top}>
-          <a
-            className={`${styles.sidebar__link__wrapper} ${
-              activeTab === "For You" ? styles.active__tab : ""
-            }`}
-            href="/for-you"
-            onClick={() => setActiveTab("For You")}
-          >
-            <div className={styles.sidebar__link__line}></div>
-            <div className={styles.sidebar__icon__wrapper}>
-              <GoHome />
-            </div>
-            <div className={styles.sidebar__link__text}>For You</div>
-          </a>
-
-          <a
-            className={`${styles.sidebar__link__wrapper} ${
-              activeTab === "My Library" ? styles.active__tab : ""
-            }`}
-            href="/library"
-            onClick={() => setActiveTab("My Library")}
-          >
-            <div className={styles.sidebar__link__line}></div>
-            <div className={styles.sidebar__icon__wrapper}>
-              <TbBadge />
-            </div>
-            <div className={styles.sidebar__link__text}>My Library</div>
-          </a>
-
-          <div
-            className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`}
-          >
-            <div className={styles.sidebar__link__line}></div>
-            <div className={styles.sidebar__icon__wrapper}>
-              <RiBallPenLine />
-            </div>
-            <div className={styles.sidebar__link__text}>Highlights</div>
-          </div>
-
-          <div
-            className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`}
-          >
-            <div className={styles.sidebar__link__line}></div>
-            <div className={styles.sidebar__icon__wrapper}>
-              <IoIosSearch />
-            </div>
-            <div className={styles.sidebar__link__text}>Search</div>
-          </div>
-          {showFontSizeControls && (
-            <div
-              className={`${styles.sidebar__link__wrapper} ${styles.sidebar__font__size__wrapper}`}
-            >
-              <button
-                onClick={() => handleFontSizeClick("small")}
-                className={`${styles.sidebar__link__text} ${
-                  styles.sidebar__font__size__icon
-                } ${
-                  activeTab === "small"
-                    ? styles.sidebar__font__size__active
-                    : ""
-                }`}
-              >
-                <RiFontSize className={styles.font__size__icon__small} />
-              </button>
-              <button
-                onClick={() => handleFontSizeClick("medium")}
-                className={`${styles.sidebar__link__text} ${
-                  styles.sidebar__font__size__icon
-                } ${
-                  activeTab === "medium"
-                    ? styles.sidebar__font__size__active
-                    : ""
-                }`}
-              >
-                <RiFontSize className={styles.font__size__icon__medium} />
-              </button>
-              <button
-                onClick={() => handleFontSizeClick("large")}
-                className={`${styles.sidebar__link__text} ${
-                  styles.sidebar__font__size__icon
-                } ${
-                  activeTab === "large"
-                    ? styles.sidebar__font__size__active
-                    : ""
-                }`}
-              >
-                <RiFontSize className={styles.font__size__icon__large} />
-              </button>
-              <button
-                onClick={() => handleFontSizeClick("xlarge")}
-                className={`${styles.sidebar__link__text} ${
-                  styles.sidebar__font__size__icon
-                } ${
-                  activeTab === "xlarge"
-                    ? styles.sidebar__font__size__active
-                    : ""
-                }`}
-              >
-                <RiFontSize className={styles.font__size__icon__xlarge} />
-              </button>
-            </div>
-          )}
+      {/* Desktop sidebar */}
+      <div className={styles.sidebar__menu}>
+        <div className={styles.sidebar__logo}>
+          <figure>
+            <Image src={logo} alt="Summarist Logo" />
+          </figure>
         </div>
-        <div className={styles.sidebar__bottom}>
-          <a
-            className={`${styles.sidebar__link__wrapper} ${
-              activeTab === "Settings" ? styles.active__tab : ""
-            }`}
-            href="/settings"
-            onClick={() => setActiveTab("Settings")}
-          >
-            <div className={styles.sidebar__link__line}></div>
-            <div className={styles.sidebar__icon__wrapper}>
-              <FiSettings />
-            </div>
-            <div className={styles.sidebar__link__text}>Settings</div>
-          </a>
-
-          <div
-            className={`${styles.sidebar__link__wrapper} ${styles.sidebar__link__not_allowed}`}
-          >
-            <div className={styles.sidebar__link__line}></div>
-            <div className={styles.sidebar__icon__wrapper}>
-              <IoMdHelpCircleOutline />
-            </div>
-            <div className={styles.sidebar__link__text}>Help & Support</div>
+        <div className={styles.sidebar__wrapper}>
+          <div className={styles.sidebar__top}>
+            {linksTop.map(renderLink)}
+            {showFontSizeControls && (
+              <div
+                className={`${styles.sidebar__link__wrapper} ${styles.sidebar__font__size__wrapper}`}
+              >
+                {["small", "medium", "large", "xlarge"].map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => handleFontSizeClick(size)}
+                    className={`${styles.sidebar__link__text} ${
+                      styles.sidebar__font__size__icon
+                    } ${
+                      activeTab === size
+                        ? styles.sidebar__font__size__active
+                        : ""
+                    }`}
+                  >
+                    <RiFontSize
+                      className={styles[`font__size__icon__${size}`]}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* 🔥 LOGIN / LOGOUT */}
-          <div className={styles.sidebar__link__wrapper}>
-            <div className={styles.sidebar__link__line}></div>
-            <div className={styles.sidebar__icon__wrapper}>
-              <FiLogOut />
-            </div>
-            <div
-              className={styles.sidebar__link__text}
-              onClick={handleLoginClick}
-              style={{ cursor: "pointer" }}
-            >
-              {user ? "Logout" : "Login"}
-            </div>
+          <div className={styles.sidebar__bottom}>
+            {linksBottom.map(renderLink)}
           </div>
         </div>
       </div>

@@ -32,6 +32,19 @@ export default function Library() {
     });
     return () => unsubscribe();
   }, []);
+  
+      const [windowWidth, setWindowWidth] = useState(
+      typeof window !== "undefined" ? window.innerWidth : 1000
+    );
+  
+    // Update window width on resize
+    useEffect(() => {
+      const handleResize = () => setWindowWidth(window.innerWidth);
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+  
+    const sidebarCollapsed = windowWidth < 550;
 
   useEffect(() => {
     if (!firebaseUser) return;
@@ -91,11 +104,17 @@ export default function Library() {
             }
           />
           <figure className={styles.book__image__wrapper}>
-            <img className={styles.book__image} src={book.imageLink} alt={book.title} />
+            <img
+              className={styles.book__image}
+              src={book.imageLink}
+              alt={book.title}
+            />
           </figure>
           <div className={styles.recommended__book__title}>{book.title}</div>
           <div className={styles.recommended__book__author}>{book.author}</div>
-          <div className={styles.recommended__book__subtitle}>{book.subTitle}</div>
+          <div className={styles.recommended__book__subtitle}>
+            {book.subTitle}
+          </div>
           <div className={styles.recommended__book__details_wrapper}>
             <div className={styles.recommended__book__details}>
               <div className={styles.recommended__book__details_icon}>
@@ -119,9 +138,15 @@ export default function Library() {
     );
 
   return (
-    <div className={styles.for__you__wrapper}>
+    <div
+      className={styles.for__you__wrapper}
+      style={{
+        marginLeft: sidebarCollapsed ? 0 : "200px",
+        width: sidebarCollapsed ? "100%" : "calc(100% - 200px)",
+      }}
+    >
       <SearchBar />
-      <Sidebar />
+      <Sidebar collapsed={sidebarCollapsed} />
       <div className={styles.for__you__row}>
         <div className={styles.for__you__container}>
           {/* Saved Books Section */}
