@@ -1,81 +1,110 @@
 import styles from "@/styles/ForYou.module.css";
 import { GiPlayButton } from "react-icons/gi";
 import { formatTime } from "@/components/formatTime";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 export default function Selected({ selected }) {
   const [durations, setDurations] = useState({});
-  const audioRef = useRef(null);
+  const [loading, setLoading] = useState({});
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  const handleLoadedMetadata = (id, duration) => {
+    setDurations((prev) => ({ ...prev, [id]: duration || 0 }));
+  };
 
-    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+  const handleLoad = (id) => {
+    setLoading((prev) => ({ ...prev, [id]: true }));
+  };
 
-    return () => {
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-    };
-  }, [selected]);
+
   return (
-    <>
-      <div className={styles.for__you__title}>Selected Just For You</div>
-      {Array.isArray(selected) && selected.length > 0 ? (
-        selected.map((select) => (
-          <div key={select.id} className={styles.selected__book_wrapper}>
+    <div>
+      <div className={styles.for_you_title}>Selected Just For You</div>
+
+      {selected.map((book) => {
+        const isLoaded = loading[book.id];
+
+        return (
+          <div
+            key={book.id}
+            className={styles.selected__book_wrapper}
+            style={{ position: "relative" }}
+          >
+            {/* Hidden audio */}
             <audio
-              controls
-              src={select.audioLink || "/placeholder-audio.mp3"}
-              style={{ display: "none" }}
+              hidden
+              src={book.audioLink || "/placeholder-audio.mp3"}
               onLoadedMetadata={(e) =>
-                setDurations((prev) => ({
-                  ...prev,
-                  [select.id]: e.target.duration || 0,
-                }))
+                handleLoadedMetadata(book.id, e.target.duration)
               }
-            ></audio>
-            <a className={styles.selected__book} href="/">
+            />
+
+            <a className={styles.selected__book} href={`/player/${book.id}`}>
               <div className={styles.selected__book__subtitle}>
-                {select.subTitle}
+                {book.subTitle}
               </div>
               <div className={styles.selected__book__line}></div>
               <div className={styles.selected__book__content}>
-                <figure className={styles.book__image__wrapper}>
+                <figure
+                  className={styles.book__image__wrapper}
+                  style={{ position: "relative" }}
+                >
                   <img
                     className={styles.book__image}
-                    src={select.imageLink}
-                    alt="img"
+                    src={book.imageLink}
+                    alt={book.title}
+                    onLoad={() => handleLoad(book.id)}
+                    style={{ opacity: isLoaded ? 1 : 0 }} // hide until loaded
                   />
                 </figure>
+
                 <div className={styles.selected__book__text}>
                   <div className={styles.selected__book__title}>
-                    {select.title}
+                    {book.title}
                   </div>
                   <div className={styles.selected__book__author}>
-                    {select.author}
+                    {book.author}
                   </div>
                   <div className={styles.selected__book__duration_wrapper}>
                     <div className={styles.selected__book__icon}>
                       <div className={styles.selected__book__image}>
-                        <Link href={`player/${select.id}`}>
+                        <Link href={`/player/${book.id}`}>
                           <GiPlayButton className={styles.play__icon} />
                         </Link>
                       </div>
                     </div>
                     <div className={styles.selected__book__duration}>
-                      {formatTime(durations[select.id] || 0).replace(":", " min ") + " sec"}
+                      {formatTime(durations[book.id] || 0)
+                        .replace(":", " min ")
+                        .concat(" sec")}
                     </div>
                   </div>
                 </div>
               </div>
             </a>
+
+            {/* Skeleton overlay for text/content */}
+            {!isLoaded && (
+              <div className={styles.selected__skeleton__card}>
+                <div className={styles.selected__skeleton__subtitle}></div>{" "}
+                {/* for subtitle */}
+                <div className={styles.selected__skeleton__content}>
+                  <div className={styles.selected__skeleton__image}></div>{" "}
+                  {/* image */}
+                  <div className={styles.selected__skeleton__text_wrapper}>
+                    <div className={styles.selected__skeleton__text}></div>{" "}
+                    {/* title */}
+                    <div
+                      className={styles.selected__skeleton__text_short}
+                    ></div>{" "}
+                    {/* author/duration */}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        ))
-      ) : (
-        <p>No books found.</p>
-      )}
-    </>
+        );
+      })}
+    </div>
   );
 }

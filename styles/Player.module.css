@@ -163,3 +163,65 @@
 .audio__progress__bar::-webkit-slider-thumb:hover {
   transform: scale(1.2);
 }
+
+@keyframes pulse {
+  0% {
+    background-color: #e1e7ea;
+  }
+  50% {
+    background-color: #f1f6f4;
+  }
+  100% {
+    background-color: #e1e7ea;
+  }
+}
+
+/* Skeleton for book summary */
+.skeleton__title {
+  width: 60%;
+  height: 32px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+.skeleton__text {
+  width: 100%;
+  height: 160px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+.skeleton__text_short {
+  width: 80%;
+  height: 16px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+/* Skeleton for book image */
+.skeleton__image {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+/* Skeleton for audio controls */
+.skeleton__audio_btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin: 0 8px;
+  animation: pulse 1.2s infinite ease-in-out;
+}
+
+.skeleton__audio_bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  animation: pulse 1.2s infinite ease-in-out;
+  margin: 16px 0;
+}

@@ -1,4 +1,3 @@
-// pages/library.js
 import { useEffect, useState } from "react";
 import { getUserLibrary, getUserFinished } from "@/firebase";
 import { auth } from "@/firebase";
@@ -15,35 +14,57 @@ export default function Library() {
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [library, setLibrary] = useState([]);
   const [finished, setFinished] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Track auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
       if (user) {
-        // Fetch saved library and finished books
-        getUserLibrary(user.uid).then((books) => setLibrary(books));
-        getUserFinished(user.uid).then((books) => setFinished(books));
+        setLoading(true);
+        const [lib, fin] = await Promise.all([
+          getUserLibrary(user.uid),
+          getUserFinished(user.uid),
+        ]);
+        setLibrary(lib);
+        setFinished(fin);
+        setLoading(false);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  // Refresh library or finished if updated
   useEffect(() => {
     if (!firebaseUser) return;
 
-    if (localStorage.getItem("libraryUpdated")) {
-      localStorage.removeItem("libraryUpdated");
-      getUserLibrary(firebaseUser.uid).then((books) => setLibrary(books));
-    }
-    if (localStorage.getItem("finishedUpdated")) {
-      localStorage.removeItem("finishedUpdated");
-      getUserFinished(firebaseUser.uid).then((books) => setFinished(books));
-    }
+    const fetchUpdated = async () => {
+      if (localStorage.getItem("libraryUpdated")) {
+        localStorage.removeItem("libraryUpdated");
+        const lib = await getUserLibrary(firebaseUser.uid);
+        setLibrary(lib);
+      }
+      if (localStorage.getItem("finishedUpdated")) {
+        localStorage.removeItem("finishedUpdated");
+        const fin = await getUserFinished(firebaseUser.uid);
+        setFinished(fin);
+      }
+    };
+    fetchUpdated();
   }, [firebaseUser]);
 
   if (!firebaseUser) return <p>Please log in to view your library.</p>;
+
+  const renderSkeleton = (count = 4) => {
+    return Array.from({ length: count }).map((_, idx) => (
+      <div key={idx} className={styles.for_you_recommended_books_link}>
+        <div className={styles.recommended__skeleton__card}>
+          <div className={styles.recommended__skeleton__image}></div>
+          <div className={styles.recommended__skeleton__pill}></div>
+          <div className={styles.recommended__skeleton__text}></div>
+          <div className={styles.recommended__skeleton__text__short}></div>
+        </div>
+      </div>
+    ));
+  };
 
   const renderBookList = (books) =>
     books.length === 0 ? (
@@ -104,21 +125,17 @@ export default function Library() {
       <div className={styles.for__you__row}>
         <div className={styles.for__you__container}>
           {/* Saved Books Section */}
-          <div className={styles.for_you_title}>
-            Saved Books
-          </div>
+          <div className={styles.for_you_title}>Saved Books</div>
           <div className={styles.for_you_subtitle}>{library.length} Items</div>
           <div className={styles.for_you_recommended_books}>
-            {renderBookList(library)}
+            {loading ? renderSkeleton(4) : renderBookList(library)}
           </div>
 
           {/* Finished Books Section */}
-          <div className={styles.for_you_title}>
-            Finished
-          </div>
+          <div className={styles.for_you_title}>Finished</div>
           <div className={styles.for_you_subtitle}>{finished.length} Items</div>
           <div className={styles.for_you_recommended_books}>
-            {renderBookList(finished)}
+            {loading ? renderSkeleton(4) : renderBookList(finished)}
           </div>
         </div>
       </div>

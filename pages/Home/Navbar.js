@@ -23,6 +23,16 @@ export default function Navbar() {
     }
   };
 
+  const handleLogoutClick = async () => {
+    if (user) {
+      try {
+        await signOut(auth); // Redux updates via _app.js listener
+      } catch (err) {
+        console.error("Logout failed:", err);
+      }
+    }
+  };
+
   return (
     <>
       <nav className={styles.nav}>
@@ -31,19 +41,14 @@ export default function Navbar() {
             <Image className={styles.nav__img} src={logo} alt="logo" />
           </figure>
           <ul className={styles.nav__list__wrapper}>
-            {user ? (
-              <li className={`${styles.nav__list} ${styles.nav__list__login}`}>
-                Welcome, {user.name || "Guest"}
-              </li>
-            ) : (
-              <li
-                onClick={() => handleLoginClick("/for-you")}
-                className={`${styles.nav__list} ${styles.nav__list__login}`}
-              >
-                Login
-              </li>
-            )}
-
+            <li
+              className={`${styles.nav__list} ${styles.nav__list__login}`}
+              onClick={
+                user ? handleLogoutClick : () => handleLoginClick("/for-you")
+              }
+            >
+              {user ? "Logout" : "Login"}
+            </li>
             <li className={`${styles.nav__list} ${styles.nav__list__mobile}`}>
               About
             </li>

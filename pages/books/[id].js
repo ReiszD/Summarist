@@ -40,7 +40,7 @@ export default function BookPage() {
   const audioRef = useRef(null);
   const [firebaseUser, setFirebaseUser] = useState(null);
   const [isInLibrary, setIsInLibrary] = useState(false);
-  const [subscriptionPlan, setSubscriptionPlan] = useState("free"); // reactive subscription
+  const [subscriptionPlan, setSubscriptionPlan] = useState("free");
 
   // ----------------------- Audio Duration -----------------------
   useEffect(() => {
@@ -84,8 +84,10 @@ export default function BookPage() {
           subData?.items?.[0]?.price?.product?.name ||
           "free";
 
-        if (planName.toLowerCase().includes("plus")) setSubscriptionPlan("premium_plus");
-        else if (planName.toLowerCase().includes("premium")) setSubscriptionPlan("premium");
+        if (planName.toLowerCase().includes("plus"))
+          setSubscriptionPlan("premium_plus");
+        else if (planName.toLowerCase().includes("premium"))
+          setSubscriptionPlan("premium");
         else setSubscriptionPlan("free");
       } else {
         setSubscriptionPlan("free");
@@ -127,13 +129,12 @@ export default function BookPage() {
     if (currentBook && currentBook.id === id) setBook(currentBook);
   }, [currentBook, id]);
 
-  if (loading && !book) return <p>Loading...</p>;
-  if (!book) return <p>Book not found.</p>;
-
-  const tagsArray = Array.isArray(book.tags)
-    ? book.tags
-    : typeof book.tags === "string"
-    ? book.tags.split(",").map((tag) => tag.trim())
+  const tagsArray = book
+    ? Array.isArray(book.tags)
+      ? book.tags
+      : typeof book.tags === "string"
+      ? book.tags.split(",").map((tag) => tag.trim())
+      : []
     : [];
 
   // ----------------------- Read/Listen -----------------------
@@ -147,11 +148,11 @@ export default function BookPage() {
     if (book.subscriptionRequired) {
       const planRank = { free: 0, premium: 1, premium_plus: 2 };
       const currentPlan = subscriptionPlan; // reactive value
-      const requiredPlan =
-        (typeof book.subscriptionRequired === "string"
+      const requiredPlan = (
+        typeof book.subscriptionRequired === "string"
           ? book.subscriptionRequired
           : "premium"
-        ).toLowerCase();
+      ).toLowerCase();
 
       if (planRank[currentPlan] < planRank[requiredPlan]) {
         const goToUpgrade = confirm(
@@ -165,6 +166,8 @@ export default function BookPage() {
     router.push(`/player/${id}`);
   };
 
+  const isLoading = !book;
+
   return (
     <div className={styles.books__wrapper}>
       {isLoginOpen && <Login onClose={() => dispatch(closeLogin())} />}
@@ -172,98 +175,144 @@ export default function BookPage() {
       <Sidebar />
 
       <div className={styles.books__row}>
-        <div className={styles.books__container}>
-          <div className={styles.inner__wrapper}>
-            <div className={styles.inner__book}>
-              <div className={styles.inner__book__title}>
-                {book.title}{" "}
-                {book.subscriptionRequired && (
-                  <span className={styles.premium__badge}> (Premium)</span>
-                )}
-              </div>
-              <div className={styles.inner__book__author}>{book.author}</div>
-              <div className={styles.inner__book__subtitle}>{book.subTitle}</div>
+        {isLoading ? (
+          // Skeleton for image, title, author, and a block of text
+          <div className={styles.books__container}>
+            <div className={styles.inner__wrapper}>
+              <div className={styles.inner__book}>
+                <div className={styles.book__skeleton__title}></div>
+                <div className={styles.book__skeleton__author}></div>
+                <div className={styles.book__skeleton__subtitle}></div>
 
-              <div className={styles.inner__book__wrapper}>
-                <div className={styles.inner__book__description_wrapper}>
-                  <div className={styles.inner__book__description}>
-                    <CiStar /> {book.averageRating} ({book.totalRating} Ratings)
+                {/* Description skeleton - mimic multiple paragraphs */}
+                <div className={styles.book__skeleton__description_block}>
+                  <div
+                    className={styles.book__skeleton__description__title}
+                  ></div>
+                  <div className={styles.book__skeleton__description}></div>
+                  <div
+                    className={styles.book__skeleton__description__title}
+                  ></div>
+                  <div className={styles.book__skeleton__description}></div>
+                </div>
+              </div>
+              <div className={styles.inner__book__img_wrapper}>
+                <div className={styles.book__skeleton__image}></div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          book && (
+            <>
+              <div className={styles.books__container}>
+                <div className={styles.inner__wrapper}>
+                  <div className={styles.inner__book}>
+                    <div className={styles.inner__book__title}>
+                      {book.title}{" "}
+                      {book.subscriptionRequired && (
+                        <span className={styles.premium__badge}>
+                          {" "}
+                          (Premium)
+                        </span>
+                      )}
+                    </div>
+                    <div className={styles.inner__book__author}>
+                      {book.author}
+                    </div>
+                    <div className={styles.inner__book__subtitle}>
+                      {book.subTitle}
+                    </div>
+
+                    <div className={styles.inner__book__wrapper}>
+                      <div className={styles.inner__book__description_wrapper}>
+                        <div className={styles.inner__book__description}>
+                          <CiStar /> {book.averageRating} ({book.totalRating}{" "}
+                          Ratings)
+                        </div>
+                        <div className={styles.inner__book__description}>
+                          <audio
+                            ref={audioRef}
+                            src={book.audioLink}
+                            preload="metadata"
+                            style={{ display: "none" }}
+                          />
+                          <CiClock2 /> {formatTime(duration)}
+                        </div>
+                        <div className={styles.inner__book__description}>
+                          <MdMicNone /> Audio & Text
+                        </div>
+                        <div className={styles.inner__book__description}>
+                          <FaRegLightbulb /> {book.keyIdeas} Key Ideas
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Read & Listen Buttons */}
+                    <div className={styles.inner__book__read__btn_wrapper}>
+                      <button
+                        className={styles.inner__book__read__btn}
+                        onClick={() => handleClick("read")}
+                      >
+                        <LuBookOpenText /> Read
+                      </button>
+                      <button
+                        className={styles.inner__book__read__btn}
+                        onClick={() => handleClick("listen")}
+                      >
+                        <MdMicNone /> Listen
+                      </button>
+                    </div>
+
+                    {/* Add to Library */}
+                    <div
+                      className={`${styles.inner__book__bookmark} ${
+                        isInLibrary ? styles.added__bookmark : ""
+                      }`}
+                      onClick={handleLibraryToggle}
+                    >
+                      {isInLibrary ? (
+                        <>
+                          <TbBadge className={styles.added__bookmark__icon} />{" "}
+                          Added to Library
+                        </>
+                      ) : (
+                        <>
+                          <TbBadge /> Add Title To My Library
+                        </>
+                      )}
+                    </div>
+
+                    {/* Tags */}
+                    <div className={styles.inner__book__tags__wrapper}>
+                      {tagsArray.map((tag, i) => (
+                        <div key={i} className={styles.inner__book__tag}>
+                          {tag}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Book Description */}
+                    <div className={styles.inner__book__book_description}>
+                      {book.bookDescription}
+                    </div>
+                    <h2 className={styles.inner__book__secondary__title}>
+                      About The Author
+                    </h2>
+                    <div className={styles.inner__book__author__description}>
+                      {book.authorDescription}
+                    </div>
                   </div>
-                  <div className={styles.inner__book__description}>
-                    <audio
-                      ref={audioRef}
-                      src={book.audioLink}
-                      preload="metadata"
-                      style={{ display: "none" }}
-                    />
-                    <CiClock2 /> {formatTime(duration)}
-                  </div>
-                  <div className={styles.inner__book__description}>
-                    <MdMicNone /> Audio & Text
-                  </div>
-                  <div className={styles.inner__book__description}>
-                    <FaRegLightbulb /> {book.keyIdeas} Key Ideas
+
+                  <div className={styles.inner__book__img_wrapper}>
+                    <figure className={styles.book__image__wrapper}>
+                      <img src={book.imageLink} alt="book pic" />
+                    </figure>
                   </div>
                 </div>
               </div>
-
-              {/* Read & Listen Buttons */}
-              <div className={styles.inner__book__read__btn_wrapper}>
-                <button
-                  className={styles.inner__book__read__btn}
-                  onClick={() => handleClick("read")}
-                >
-                  <LuBookOpenText /> Read
-                </button>
-                <button
-                  className={styles.inner__book__read__btn}
-                  onClick={() => handleClick("listen")}
-                >
-                  <MdMicNone /> Listen
-                </button>
-              </div>
-
-              {/* Add to Library */}
-              <div
-                className={`${styles.inner__book__bookmark} ${
-                  isInLibrary ? styles.added__bookmark : ""
-                }`}
-                onClick={handleLibraryToggle}
-              >
-                {isInLibrary ? (
-                  <>
-                    <TbBadge className={styles.added__bookmark__icon} /> Added
-                    to Library
-                  </>
-                ) : (
-                  <>
-                    <TbBadge /> Add Title To My Library
-                  </>
-                )}
-              </div>
-
-              {/* Tags */}
-              <div className={styles.inner__book__tags__wrapper}>
-                {tagsArray.map((tag, i) => (
-                  <div key={i} className={styles.inner__book__tag}>
-                    {tag}
-                  </div>
-                ))}
-              </div>
-
-              {/* Book Description */}
-              <div className={styles.inner__book__book_description}>{book.bookDescription}</div>
-              <h2 className={styles.inner__book__secondary__title}>About The Author</h2>
-              <div className={styles.inner__book__author__description}>{book.authorDescription}</div>
-            </div>
-
-            <div className={styles.inner__book__img_wrapper}>
-              <figure className={styles.book__image__wrapper}>
-                <img src={book.imageLink} alt="book pic" />
-              </figure>
-            </div>
-          </div>
-        </div>
+            </>
+          )
+        )}
       </div>
     </div>
   );

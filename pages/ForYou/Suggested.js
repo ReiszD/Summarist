@@ -7,51 +7,63 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Suggested({ suggested }) {
   const [durations, setDurations] = useState({});
-  const audioRef = useRef(null);
+  // const audioRef = useRef(null);
+  const [loading, setLoading] = useState({});
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  const handleLoadedMetadata = (id, duration) => {
+    setDurations((prev) => ({ ...prev, [id]: duration || 0 }));
+  };
 
-    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+  const handleLoad = (id) => {
+    setLoading((prev) => ({ ...prev, [id]: true }));
+  };
 
-    return () => {
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-    };
-  }, [suggested]);
   return (
     <div>
       <div className={styles.for_you_title}>Suggested Books</div>
       <div className={styles.for_you_subtitle}>Browse Those Books</div>
-      {Array.isArray(suggested) && suggested.length > 0 ? (
         <div className={styles.for_you_recommended_books}>
-          {suggested.map((suggest) => (
+          {suggested.map((suggest) => {
+            const isLoaded = loading[suggest.id];
+            return (
             <Link
               className={styles.for_you_recommended_books_link}
               href={`/books/${suggest.id}`}
+              style={{ position: "relative" }}
             >
-              {suggest.subscriptionRequired && (
+            
+              {!isLoaded && (
+                <div className={styles.recommended__skeleton__card}>
+                  <div className={styles.recommended__skeleton__image}></div>
+                  <div className={styles.recommended__skeleton__pill}></div>
+                  <div className={styles.recommended__skeleton__text}></div>
+                  <div
+                    className={styles.recommended__skeleton__text__short}
+                  ></div>
+                </div>
+              )}
+
+              {isLoaded && suggest.subscriptionRequired && (
                 <div className={styles.book__pill}>Premium</div>
               )}
-                 <audio
-                controls
+              <audio
+                hidden
                 src={suggest.audioLink || "/placeholder-audio.mp3"}
-                style={{ display: "none" }}
-                onLoadedMetadata={(e) =>
-                  setDurations((prev) => ({
-                    ...prev,
-                    [suggest.id]: e.target.duration || 0,
-                  }))
+               onLoadedMetadata={(e) =>
+                  handleLoadedMetadata(suggest.id, e.target.duration)
                 }
               ></audio>
-              <figure className={styles.book__image__wrapper}>
+              <figure className={styles.book__image__wrapper}
+              style={{ display: isLoaded ? "block" : "none" }}>
                 <img
                   className={styles.book__image}
                   src={suggest.imageLink}
                   alt="img"
+                  onLoad={() => handleLoad(suggest.id)}
                 />
               </figure>
+              {isLoaded && (
+                <>
               <div className={styles.recommended__book__title}>
                 {suggest.title}
               </div>
@@ -79,12 +91,12 @@ export default function Suggested({ suggested }) {
                   </div>
                 </div>
               </div>
+              </>
+              )}
             </Link>
-          ))}
+            );
+          })}
         </div>
-      ) : (
-        <p>No books found.</p>
-      )}
     </div>
   );
 }

@@ -8,46 +8,55 @@ import { openLogin } from "@/redux/loginSlice";
 import Login from "./Home/Login";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/firebase";
 
 export default function Settings() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.user?.user || null);
   const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
-  const [subscriptionPlan, setSubscriptionPlan] = useState("Basic");
+
+  const [subscriptionPlan, setSubscriptionPlan] = useState(null); // null until fetched
+  const [loading, setLoading] = useState(true); // loading state for skeleton
 
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      setLoading(false);
+      return;
+    }
 
     const q = query(
       collection(db, "customers", user.uid, "subscriptions"),
       where("status", "in", ["trialing", "active"])
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!snapshot.empty) {
-        const subData = snapshot.docs[0].data();
-        const planName =
-          subData?.items?.[0]?.plan?.product?.name ||
-          subData?.items?.[0]?.price?.product?.name ||
-          subData?.role ||
-          "Basic";
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const subData = snapshot.docs[0].data();
+          const planName =
+            subData?.items?.[0]?.plan?.product?.name ||
+            subData?.items?.[0]?.price?.product?.name ||
+            subData?.role ||
+            "Basic";
 
-        setSubscriptionPlan(planName);
-      } else {
+          setSubscriptionPlan(planName);
+        } else {
+          setSubscriptionPlan("Basic");
+        }
+        setLoading(false); // stop skeleton
+      },
+      (error) => {
+        console.error("Error fetching subscription:", error);
         setSubscriptionPlan("Basic");
+        setLoading(false);
       }
-    });
+    );
 
     return () => unsubscribe();
   }, [user?.uid]);
+
   return (
     <div className={styles.settings__wrapper}>
       <SearchBar />
@@ -57,7 +66,20 @@ export default function Settings() {
         <div className={styles.settings__row}>
           <div className={styles.settings__section__title}>Settings</div>
 
-          {user ? (
+          {loading ? (
+            // Skeleton loader over settings content
+            <>
+              <div className={styles.settings__skeleton__card}>
+                <div className={styles.settings__skeleton__subtitle}></div>
+                <div className={styles.settings__skeleton__text}></div>
+                <div className={styles.settings__skeleton__text__short}></div>
+              </div>
+              <div className={styles.settings__skeleton__card}>
+                <div className={styles.settings__skeleton__subtitle}></div>
+                <div className={styles.settings__skeleton__text}></div>
+              </div>
+            </>
+          ) : user ? (
             // Logged-in user → show subscription info and email
             <>
               <div className={styles.setting__content}>
@@ -67,7 +89,7 @@ export default function Settings() {
                   Your Subscription Plan
                 </div>
                 <div className={styles.settings__text}>{subscriptionPlan}</div>
-                {subscriptionPlan.toLowerCase() === "basic" && (
+                {subscriptionPlan?.toLowerCase() === "basic" && (
                   <Link
                     href={"/choose-plan"}
                     className={`${styles.settings__btn} ${styles.settings__login__btn}`}

@@ -170,3 +170,92 @@
     width: 172px;
     height: 172px;
 }
+
+/* Skeleton blocks */
+.book__skeleton__image {
+  width: 200px;
+  height: 300px;
+  background-color: #e0e0e0;
+  background-size: 200% 100%;
+  animation: pulse 1.5s infinite;
+  border-radius: 8px;
+}
+
+.book__skeleton__title {
+  width: 60%;
+  height: 28px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  background-size: 200% 100%;
+  animation: pulse 1.5s infinite;
+}
+
+.book__skeleton__author {
+  width: 40%;
+  height: 20px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+   background-color: #e0e0e0;
+  background-size: 200% 100%;
+  animation: pulse 1.5s infinite;
+}
+
+.book__skeleton__text {
+  width: 100%;
+  height: 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+   background-color: #e0e0e0;
+  background-size: 200% 100%;
+  animation: pulse 1.5s infinite;
+}
+
+.book__skeleton__subtitle {
+  width: 60%;
+  height: 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+   background-color: #e0e0e0;
+  background-size: 200% 100%;
+  animation: pulse 1.5s infinite;
+}
+
+.book__skeleton__description_block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.book__skeleton__description {
+  width: 100%;
+  height: 160px;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  background-size: 200% 100%;
+  animation: pulse 1.5s infinite;
+}
+
+.book__skeleton__description__title {
+  width: 40%;
+  height: 20px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+  animation: pulse 1.5s infinite;
+}
+
+
+@keyframes pulse {
+  0% {
+    background-color: #e1e7ea;
+  }
+  50% {
+    background-color: #f1f6f4;
+  }
+  100% {
+    background-color: #e1e7ea;
+  }
+}

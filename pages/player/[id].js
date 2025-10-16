@@ -32,7 +32,9 @@ export default function Audio() {
 
   // Track Firebase user
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => setFirebaseUser(user));
+    const unsubscribe = onAuthStateChanged(auth, (user) =>
+      setFirebaseUser(user)
+    );
     return () => unsubscribe();
   }, []);
 
@@ -49,7 +51,7 @@ export default function Audio() {
     if (currentBook && currentBook.id === id) setBook(currentBook);
   }, [currentBook, id]);
 
-  // Handle audio metadata, progress, and ended event
+  // Handle audio events
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -76,7 +78,6 @@ export default function Audio() {
     };
   }, [audioRef, firebaseUser, book]);
 
-  // Play/pause toggle
   const togglePlay = () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -87,7 +88,6 @@ export default function Audio() {
     setIsPlaying(!isPlaying);
   };
 
-  // Skip controls
   const skipForward = () => {
     if (audioRef.current)
       audioRef.current.currentTime = Math.min(
@@ -98,10 +98,12 @@ export default function Audio() {
 
   const skipBackward = () => {
     if (audioRef.current)
-      audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
+      audioRef.current.currentTime = Math.max(
+        audioRef.current.currentTime - 10,
+        0
+      );
   };
 
-  // Progress bar
   const handleProgressChange = (e) => {
     const newTime = (e.target.value / 100) * duration;
     if (audioRef.current) audioRef.current.currentTime = newTime;
@@ -136,11 +138,12 @@ export default function Audio() {
         return "24px";
       case "xlarge":
         return "28px";
+      default:
+        return "20px";
     }
   };
 
-  if (loading && !book) return <p>Loading...</p>;
-  if (!book) return <p>Book not found.</p>;
+   const isLoading = !book;
 
   return (
     <div className={styles.audio__wrapper}>
@@ -152,78 +155,123 @@ export default function Audio() {
       />
 
       <div className={styles.player__summary}>
-        <div className={styles.audio__book__summary}>
-          <div className={styles.audio__book__summary__title}>{book.title}</div>
-          <div className={styles.audio__book__summary__text}>{book.summary}</div>
-        </div>
-
-     <div className={styles.audio__player__wrapper}>
-          <audio ref={audioRef} src={book.audioLink}></audio>
-
-          <div className={styles.audio__track__wrapper}>
-            <figure className={styles.audio__track__img__mask}>
+        {isLoading ? (
+          <>
+            <div className={styles.audio__book__summary}>
+              <div className={styles.skeleton__title}></div>
+              <div className={styles.skeleton__text_short}></div>
+              <div className={styles.skeleton__text}></div>
+            </div>
+            <div className={styles.audio__player__wrapper}>
               <figure className={styles.player__book__image__wrapper}>
-                <img
-                  src={book.imageLink}
-                  alt="book image"
-                  className={styles.player__book__image}
-                />
+                <div className={styles.skeleton__image}></div>
               </figure>
-            </figure>
 
-            <div className={styles.audio__track__details__wrapper}>
-              <div className={styles.audio__track__title}>{book.title}</div>
-              <div className={styles.audio__track__author}>{book.author}</div>
+              <div className={styles.audio__controls__wrapper}>
+                <div className={styles.audio__controls}>
+                  <div className={styles.skeleton__audio_btn}></div>
+                  <div className={styles.skeleton__audio_btn}></div>
+                  <div className={styles.skeleton__audio_btn}></div>
+                </div>
+              </div>
+
+              <div className={styles.audio__progress__wrapper}>
+                <div className={styles.skeleton__audio_bar}></div>
+              </div>
             </div>
-          </div>
-
-          <div className={styles.audio__controls__wrapper}>
-            <div className={styles.audio__controls}>
-              <button
-                className={styles.audio__controls__btn}
-                onClick={skipBackward}
-              >
-                <MdOutlineReplay10 className={styles.controls__btn__img} />
-              </button>
-
-              <button
-                className={`${styles.audio__controls__btn} ${styles.audio__controls__play}`}
-                onClick={togglePlay}
-              >
-                {isPlaying ? (
-                  <GiPauseButton className={styles.controls__btn__play__img} />
-                ) : (
-                  <GiPlayButton className={styles.controls__btn__play__img} />
-                )}
-              </button>
-
-              <button
-                className={styles.audio__controls__btn}
-                onClick={skipForward}
-              >
-                <MdOutlineForward10 className={styles.controls__btn__img} />
-              </button>
+          </>
+        ) : (
+          book && (
+          <>
+            {/* Book Summary */}
+            <div className={styles.audio__book__summary}>
+              <div className={styles.audio__book__summary__title}>
+                {book.title}
+              </div>
+              <div className={styles.audio__book__summary__text}>
+                {book.summary}
+              </div>
             </div>
-          </div>
 
-          <div className={styles.audio__progress__wrapper}>
-            <div className={styles.audio__time}>{formatTime(currentTime)}</div>
-            <input
-              type="range"
-              className={styles.audio__progress__bar}
-              value={duration ? (currentTime / duration) * 100 : 0}
-              onChange={handleProgressChange}
-              style={{
-                background: `linear-gradient(to right, rgb(43, 217, 124) 0%, rgb(43, 217, 124) ${
-                  duration ? (currentTime / duration) * 100 : 0
-                }%, rgb(109, 120, 125) ${
-                  duration ? (currentTime / duration) * 100 : 0
-                }%, rgb(109, 120, 125) 100%)`,
-              }}
-            />
-            <div className={styles.audio__time}>{formatTime(duration)}</div>
-          </div>
-        </div>
+            {/* Audio Player */}
+            <div className={styles.audio__player__wrapper}>
+              <audio ref={audioRef} src={book.audioLink}></audio>
+
+              <div className={styles.audio__track__wrapper}>
+                <figure className={styles.audio__track__img__mask}>
+                  <figure className={styles.player__book__image__wrapper}>
+                    <img
+                      src={book.imageLink}
+                      alt="book image"
+                      className={styles.player__book__image}
+                    />
+                  </figure>
+                </figure>
+
+                <div className={styles.audio__track__details__wrapper}>
+                  <div className={styles.audio__track__title}>{book.title}</div>
+                  <div className={styles.audio__track__author}>
+                    {book.author}
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.audio__controls__wrapper}>
+                <div className={styles.audio__controls}>
+                  <button
+                    className={styles.audio__controls__btn}
+                    onClick={skipBackward}
+                  >
+                    <MdOutlineReplay10 className={styles.controls__btn__img} />
+                  </button>
+
+                  <button
+                    className={`${styles.audio__controls__btn} ${styles.audio__controls__play}`}
+                    onClick={togglePlay}
+                  >
+                    {isPlaying ? (
+                      <GiPauseButton
+                        className={styles.controls__btn__play__img}
+                      />
+                    ) : (
+                      <GiPlayButton
+                        className={styles.controls__btn__play__img}
+                      />
+                    )}
+                  </button>
+
+                  <button
+                    className={styles.audio__controls__btn}
+                    onClick={skipForward}
+                  >
+                    <MdOutlineForward10 className={styles.controls__btn__img} />
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.audio__progress__wrapper}>
+                <div className={styles.audio__time}>
+                  {formatTime(currentTime)}
+                </div>
+                <input
+                  type="range"
+                  className={styles.audio__progress__bar}
+                  value={duration ? (currentTime / duration) * 100 : 0}
+                  onChange={handleProgressChange}
+                  style={{
+                    background: `linear-gradient(to right, rgb(43, 217, 124) 0%, rgb(43, 217, 124) ${
+                      duration ? (currentTime / duration) * 100 : 0
+                    }%, rgb(109, 120, 125) ${
+                      duration ? (currentTime / duration) * 100 : 0
+                    }%, rgb(109, 120, 125) 100%)`,
+                  }}
+                />
+                <div className={styles.audio__time}>{formatTime(duration)}</div>
+              </div>
+            </div>
+          </>
+          )
+        )}
       </div>
     </div>
   );

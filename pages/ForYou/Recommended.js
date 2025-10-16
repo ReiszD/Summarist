@@ -1,93 +1,100 @@
 import styles from "@/styles/ForYou.module.css";
-import { CiClock2 } from "react-icons/ci";
-import { CiStar } from "react-icons/ci";
+import { CiClock2, CiStar } from "react-icons/ci";
 import Link from "next/link";
 import { formatTime } from "@/components/formatTime";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 export default function Recommended({ recommended }) {
   const [durations, setDurations] = useState({});
-  const audioRef = useRef(null);
+  const [loading, setLoading] = useState({});
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  const handleLoadedMetadata = (id, duration) => {
+    setDurations((prev) => ({ ...prev, [id]: duration || 0 }));
+  };
 
-    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
-    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+  const handleLoad = (id) => {
+    setLoading((prev) => ({ ...prev, [id]: true }));
+  };
 
-    return () => {
-      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-    };
-  }, [recommended]);
 
   return (
     <div>
       <div className={styles.for_you_title}>Recommended For You</div>
       <div className={styles.for_you_subtitle}>We think you'll like these</div>
+      <div className={styles.for_you_recommended_books}>
+        {recommended.map((recommend) => {
+          const isLoaded = loading[recommend.id];
 
-      {Array.isArray(recommended) && recommended.length > 0 ? (
-        <div className={styles.for_you_recommended_books}>
-          {recommended.map((recommend) => (
+          return (
             <Link
               key={recommend.id}
               className={styles.for_you_recommended_books_link}
               href={`/books/${recommend.id}`}
+              style={{ position: "relative" }} // <-- relative container
             >
-              {recommend.subscriptionRequired && (
+              {/* Skeleton placeholder */}
+              {!isLoaded && (
+                <div className={styles.recommended__skeleton__card}>
+                  <div className={styles.recommended__skeleton__image}></div>
+                  <div className={styles.recommended__skeleton__pill}></div>
+                  <div className={styles.recommended__skeleton__text}></div>
+                  <div
+                    className={styles.recommended__skeleton__text__short}
+                  ></div>
+                </div>
+              )}
+
+              {isLoaded && recommend.subscriptionRequired && (
                 <div className={styles.book__pill}>Premium</div>
               )}
+
               <audio
-                controls
+                hidden
                 src={recommend.audioLink || "/placeholder-audio.mp3"}
-                style={{ display: "none" }}
                 onLoadedMetadata={(e) =>
-                  setDurations((prev) => ({
-                    ...prev,
-                    [recommend.id]: e.target.duration || 0,
-                  }))
+                  handleLoadedMetadata(recommend.id, e.target.duration)
                 }
-              ></audio>
-              <figure className={styles.book__image__wrapper}>
+              />
+
+              <figure
+                className={styles.book__image__wrapper}
+                style={{ display: isLoaded ? "block" : "none" }}
+              >
                 <img
                   className={styles.book__image}
                   src={recommend.imageLink}
                   alt={recommend.title}
+                  onLoad={() => handleLoad(recommend.id)}
                 />
               </figure>
-              <div className={styles.recommended__book__title}>
-                {recommend.title}
-              </div>
-              <div className={styles.recommended__book__author}>
-                {recommend.author}
-              </div>
-              <div className={styles.recommended__book__subtitle}>
-                {recommend.subTitle}
-              </div>
-              <div className={styles.recommended__book__details_wrapper}>
-                <div className={styles.recommended__book__details}>
-                  <div className={styles.recommended__book__details_icon}>
-                    <CiClock2 />
+
+              {isLoaded && (
+                <>
+                  <div className={styles.recommended__book__title}>
+                    {recommend.title}
                   </div>
-                  <div className={styles.recommended__book__details_text}>
-                    {formatTime(durations[recommend.id] || 0)}
+                  <div className={styles.recommended__book__author}>
+                    {recommend.author}
                   </div>
-                </div>
-                <div className={styles.recommended__book__details}>
-                  <div className={styles.recommended__book__details_icon}>
-                    <CiStar />
+                  <div className={styles.recommended__book__subtitle}>
+                    {recommend.subTitle}
                   </div>
-                  <div className={styles.recommended__book__details_text}>
-                    {recommend.averageRating}
+                  <div className={styles.recommended__book__details_wrapper}>
+                    <div className={styles.recommended__book__details}>
+                      <CiClock2 />
+                      <span>{formatTime(durations[recommend.id] || 0)}</span>
+                    </div>
+                    <div className={styles.recommended__book__details}>
+                      <CiStar />
+                      <span>{recommend.averageRating}</span>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </Link>
-          ))}
-        </div>
-      ) : (
-        <p>No books found.</p>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }
