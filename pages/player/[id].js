@@ -171,6 +171,7 @@ export default function Audio() {
         showFontSizeControls
         onFontSizeChange={handleFontSizeChange}
         initialActiveTab={fontSize}
+        bottomOffset="60px"
         collapsed={sidebarCollapsed}
       />
 

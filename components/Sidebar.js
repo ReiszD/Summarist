@@ -20,6 +20,7 @@ export default function Sidebar({
   onFontSizeChange,
   initialActiveTab = "medium",
   collapsed = false,
+  bottomOffset = 0,
 }) {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -147,7 +148,7 @@ export default function Sidebar({
                 </div>
               )}
             </div>
-            <div className={styles.sidebar__bottom}>
+            <div className={styles.sidebar__bottom} style={{ marginBottom: bottomOffset }}>
               {linksBottom.map(renderLink)}
             </div>
           </div>
@@ -188,7 +189,7 @@ export default function Sidebar({
               </div>
             )}
           </div>
-          <div className={styles.sidebar__bottom}>
+          <div className={styles.sidebar__bottom} style={{ marginBottom: bottomOffset }}>
             {linksBottom.map(renderLink)}
           </div>
         </div>
