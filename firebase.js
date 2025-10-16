@@ -132,16 +132,26 @@ const logout = () => {
 
 const getUserSubscription = async (uid) => {
   try {
-    const userDoc = await getDoc(doc(db, "users", uid));
-    if (userDoc.exists()) {
-      // Return the entire subscription object or just the premium status
-      const userData = userDoc.data();
-      return userData.premium ? (userData.subscriptionPlan || true) : false; // Return plan name if available, otherwise just true/false
-    }
-    return false;
+    const subRef = doc(db, "customers", uid, "subscriptions", "active");
+    const docSnap = await getDoc(subRef);
+
+    if (!docSnap.exists()) return "free";
+
+    const data = docSnap.data();
+
+    // Extract plan name safely
+    const planName = data?.items?.[0]?.plan?.product?.name || "";
+    const status = data?.status;
+
+    if (status !== "active") return "free";
+
+    if (planName.toLowerCase().includes("plus")) return "premium_plus";
+    if (planName.toLowerCase().includes("premium")) return "premium";
+
+    return "free";
   } catch (error) {
-    console.error(error);
-    return false;
+    console.error("Error fetching subscription:", error);
+    return "free";
   }
 };
 

@@ -8,7 +8,13 @@ import { openLogin } from "@/redux/loginSlice";
 import Login from "./Home/Login";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  onSnapshot,
+} from "firebase/firestore";
 import { db } from "@/firebase";
 
 export default function Settings() {
@@ -28,7 +34,13 @@ export default function Settings() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
         const subData = snapshot.docs[0].data();
-        setSubscriptionPlan(subData?.role || "Premium");
+        const planName =
+          subData?.items?.[0]?.plan?.product?.name ||
+          subData?.items?.[0]?.price?.product?.name ||
+          subData?.role ||
+          "Basic";
+
+        setSubscriptionPlan(planName);
       } else {
         setSubscriptionPlan("Basic");
       }

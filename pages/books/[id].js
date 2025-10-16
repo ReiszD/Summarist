@@ -13,10 +13,12 @@ import {
   auth,
   addBookToLibrary,
   removeBookFromLibrary,
-  getUserSubscription,
   getUserLibrary,
 } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebase";
+
 import { TbBadge } from "react-icons/tb";
 import { CiStar, CiClock2 } from "react-icons/ci";
 import { MdMicNone } from "react-icons/md";
@@ -27,6 +29,7 @@ export default function BookPage() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { id } = router.query;
+
   const { isLoginOpen } = useSelector((state) => state.login);
   const { recommended, selected, suggested, currentBook, loading } =
     useSelector((state) => state.books);
@@ -36,8 +39,8 @@ export default function BookPage() {
   const [duration, setDuration] = useState(0);
   const audioRef = useRef(null);
   const [firebaseUser, setFirebaseUser] = useState(null);
-  const [isPremium, setIsPremium] = useState(false);
   const [isInLibrary, setIsInLibrary] = useState(false);
+  const [subscriptionPlan, setSubscriptionPlan] = useState("free"); // reactive subscription
 
   // ----------------------- Audio Duration -----------------------
   useEffect(() => {
@@ -59,29 +62,38 @@ export default function BookPage() {
         const savedBooks = await getUserLibrary(user.uid);
         const exists = savedBooks.some((b) => b.bookId === book.id);
         setIsInLibrary(exists);
-
-        // Also check premium
-        const premiumStatus = await getUserSubscription(user.uid);
-        setIsPremium(premiumStatus);
       }
     });
     return () => unsubscribe();
   }, [book?.id]);
 
-  // ----------------------- Check Library & Premium -----------------------
+  // ----------------------- Subscription Listener -----------------------
   useEffect(() => {
-    if (!firebaseUser || !book?.id) return;
+    if (!firebaseUser?.uid) return;
 
-    const checkLibraryAndPremium = async () => {
-      const savedBooks = await getUserLibrary(firebaseUser.uid);
-      setIsInLibrary(savedBooks.some((b) => b.bookId === book.id));
+    const q = query(
+      collection(db, "customers", firebaseUser.uid, "subscriptions"),
+      where("status", "in", ["trialing", "active"])
+    );
 
-      const premiumStatus = await getUserSubscription(firebaseUser.uid);
-      setIsPremium(premiumStatus);
-    };
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (!snapshot.empty) {
+        const subData = snapshot.docs[0].data();
+        const planName =
+          subData?.items?.[0]?.plan?.product?.name ||
+          subData?.items?.[0]?.price?.product?.name ||
+          "free";
 
-    checkLibraryAndPremium();
-  }, [firebaseUser, book]);
+        if (planName.toLowerCase().includes("plus")) setSubscriptionPlan("premium_plus");
+        else if (planName.toLowerCase().includes("premium")) setSubscriptionPlan("premium");
+        else setSubscriptionPlan("free");
+      } else {
+        setSubscriptionPlan("free");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [firebaseUser?.uid]);
 
   // ----------------------- Add/Remove Library -----------------------
   const handleLibraryToggle = async () => {
@@ -127,20 +139,27 @@ export default function BookPage() {
   // ----------------------- Read/Listen -----------------------
   const handleClick = (type = "listen") => {
     if (!firebaseUser) {
-      sessionStorage.setItem(
-        "loginRedirect",
-        type === `/player/${id}`
-      );
+      sessionStorage.setItem("loginRedirect", `/player/${id}`);
       dispatch(openLogin());
       return;
     }
 
-    if (book.subscriptionRequired && !isPremium) {
-      const goToUpgrade = confirm(
-        "This book requires a premium subscription. Do you want to upgrade?"
-      );
-      if (goToUpgrade) router.push("/choose-plan");
-      return;
+    if (book.subscriptionRequired) {
+      const planRank = { free: 0, premium: 1, premium_plus: 2 };
+      const currentPlan = subscriptionPlan; // reactive value
+      const requiredPlan =
+        (typeof book.subscriptionRequired === "string"
+          ? book.subscriptionRequired
+          : "premium"
+        ).toLowerCase();
+
+      if (planRank[currentPlan] < planRank[requiredPlan]) {
+        const goToUpgrade = confirm(
+          `This book requires a ${requiredPlan} plan. Would you like to upgrade?`
+        );
+        if (goToUpgrade) router.push("/choose-plan");
+        return;
+      }
     }
 
     router.push(`/player/${id}`);
@@ -163,9 +182,7 @@ export default function BookPage() {
                 )}
               </div>
               <div className={styles.inner__book__author}>{book.author}</div>
-              <div className={styles.inner__book__subtitle}>
-                {book.subTitle}
-              </div>
+              <div className={styles.inner__book__subtitle}>{book.subTitle}</div>
 
               <div className={styles.inner__book__wrapper}>
                 <div className={styles.inner__book__description_wrapper}>
@@ -194,7 +211,7 @@ export default function BookPage() {
               <div className={styles.inner__book__read__btn_wrapper}>
                 <button
                   className={styles.inner__book__read__btn}
-                  onClick={() => handleClick("listen")}
+                  onClick={() => handleClick("read")}
                 >
                   <LuBookOpenText /> Read
                 </button>
@@ -215,7 +232,8 @@ export default function BookPage() {
               >
                 {isInLibrary ? (
                   <>
-                    <TbBadge className={styles.added__bookmark__icon} /> Added to Library
+                    <TbBadge className={styles.added__bookmark__icon} /> Added
+                    to Library
                   </>
                 ) : (
                   <>
@@ -234,15 +252,9 @@ export default function BookPage() {
               </div>
 
               {/* Book Description */}
-              <div className={styles.inner__book__book_description}>
-                {book.bookDescription}
-              </div>
-              <h2 className={styles.inner__book__secondary__title}>
-                About The Author
-              </h2>
-              <div className={styles.inner__book__author__description}>
-                {book.authorDescription}
-              </div>
+              <div className={styles.inner__book__book_description}>{book.bookDescription}</div>
+              <h2 className={styles.inner__book__secondary__title}>About The Author</h2>
+              <div className={styles.inner__book__author__description}>{book.authorDescription}</div>
             </div>
 
             <div className={styles.inner__book__img_wrapper}>

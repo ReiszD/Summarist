@@ -6,7 +6,7 @@ import store from "@/redux/store";
 import LoginWrapper from "@/components/LoginWrapper";
 import { auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { setUser, clearUser, logoutUser } from "@/redux/userSlice"; // ✅ using clearUser
+import { setUser, logoutUser } from "@/redux/userSlice"; // ✅ using clearUser
 
 function AppWrapper({ Component, pageProps }) {
   const dispatch = useDispatch();
@@ -16,7 +16,7 @@ function AppWrapper({ Component, pageProps }) {
       if (firebaseUser) {
         dispatch(setUser(firebaseUser));
       } else {
-        dispatch(logoutUser()); // ✅ corrected from logoutUser() to clearUser()
+        dispatch(logoutUser()); // ✅ works perfectly now
       }
     });
     return () => unsubscribe();
