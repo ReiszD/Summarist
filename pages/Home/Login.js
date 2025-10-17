@@ -21,7 +21,6 @@ export default function Login({ onClose }) {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  // Close modal on Escape
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") onClose?.();
@@ -30,17 +29,14 @@ export default function Login({ onClose }) {
     return () => document.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
-  // Helper: get redirect path from sessionStorage
   const getRedirect = () => sessionStorage.getItem("loginRedirect") || "/";
 
-  // Helper: redirect after login and clean up sessionStorage
   const handleRedirect = () => {
     const redirectTo = getRedirect();
     sessionStorage.removeItem("loginRedirect");
     router.push(redirectTo);
   };
 
-  // Email/password login or signup
   const handleUserAuth = async (event) => {
     event.preventDefault();
     try {
@@ -50,7 +46,6 @@ export default function Login({ onClose }) {
         await signup(name, email, password);
       }
 
-      // Wait for Firebase auth state to ensure login is complete
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
           onClose?.();
@@ -64,17 +59,14 @@ export default function Login({ onClose }) {
     }
   };
 
-  // Google login
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
 
-      // Redirect immediately
       const redirectTo = sessionStorage.getItem("loginRedirect") || "/for-you";
       router.push(redirectTo);
       sessionStorage.removeItem("loginRedirect");
 
-      // Close modal after routing
       onClose?.();
     } catch (err) {
       console.error(err);
@@ -82,7 +74,6 @@ export default function Login({ onClose }) {
     }
   };
 
-  // Guest login
   const handleGuestSignIn = async () => {
     try {
       await signInAsGuest();
@@ -100,7 +91,6 @@ export default function Login({ onClose }) {
     }
   };
 
-  // Password reset
   const handleForgotPassword = async () => {
     if (!email) return alert("Please enter your email to reset password.");
     try {
@@ -121,16 +111,11 @@ export default function Login({ onClose }) {
             ✕
           </button>
           <h1>{signState}</h1>
-
-          {/* Guest login */}
           <button className={styles.guest__btn} onClick={handleGuestSignIn}>
             <FaRegUser />
             Login as a Guest
           </button>
-
           <hr className={styles.hr__text} data-content="OR" />
-
-          {/* Google login */}
           <button className={styles.google__btn} onClick={handleGoogleSignIn}>
             <Image
               src={google_icon}
@@ -141,8 +126,6 @@ export default function Login({ onClose }) {
           </button>
 
           <hr className={styles.hr__text} data-content="OR" />
-
-          {/* Email/password form */}
           <form onSubmit={handleUserAuth}>
             {signState === "Sign up to Summarist" && (
               <input
@@ -182,8 +165,6 @@ export default function Login({ onClose }) {
               )}
             </div>
           </form>
-
-          {/* Switch login/sign up */}
           <div className={styles.form__switch}>
             {signState === "Log in to Summarist" ? (
               <p>

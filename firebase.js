@@ -1,4 +1,3 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import {
   createUserWithEmailAndPassword,
@@ -22,7 +21,6 @@ import {
   getDoc,
 } from "firebase/firestore";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
@@ -32,7 +30,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_API_ID,
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -44,7 +41,6 @@ const signup = async (name, email, password) => {
     const res = await createUserWithEmailAndPassword(auth, email, password);
     const user = res.user;
     await setDoc(doc(db, "users", user.uid), {
-      // Changed from addDoc to setDoc(doc(db, "users", user.uid))
       uid: user.uid,
       name,
       authProvider: "local",
@@ -139,7 +135,6 @@ const getUserSubscription = async (uid) => {
 
     const data = docSnap.data();
 
-    // Extract plan name safely
     const planName = data?.items?.[0]?.plan?.product?.name || "";
     const status = data?.status;
 
@@ -205,7 +200,6 @@ export const removeBookFromLibrary = async (uid, bookId) => {
   }
 };
 
-// Add finished book to user's finished collection
 export const addBookToFinished = async (uid, book) => {
   try {
     await setDoc(doc(db, "users", uid, "finished", book.id), {
@@ -220,14 +214,12 @@ export const addBookToFinished = async (uid, book) => {
       finishedAt: new Date(),
     });
 
-    // Mark to trigger real-time update in library
     localStorage.setItem("finishedUpdated", true);
   } catch (error) {
     console.error("Error marking book as finished:", error);
   }
 };
 
-// Get all finished books for a user
 export const getUserFinished = async (uid) => {
   try {
     const finishedRef = collection(db, "users", uid, "finished");
@@ -238,8 +230,6 @@ export const getUserFinished = async (uid) => {
     return [];
   }
 };
-
-// ----------------------- Export -----------------------
 
 export {
   auth,
