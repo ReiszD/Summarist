@@ -39,7 +39,6 @@ export default function SearchBar() {
     }
   }
 
-  // Debounced live search
   useEffect(() => {
     const handler = setTimeout(() => {
       if (search.trim()) fetchBooks(search);
@@ -61,7 +60,6 @@ export default function SearchBar() {
     };
   }, [search]);
 
-  // Navigate to a book
   function handleSelectBook(id) {
     router.push(`/books/${id}`);
     setSearch("");
@@ -70,7 +68,6 @@ export default function SearchBar() {
     setHighlightIndex(-1);
   }
 
-  // Handle Enter key
   function handleEnterSearch() {
     if (highlightIndex >= 0 && books[highlightIndex]) {
       handleSelectBook(books[highlightIndex].id);
@@ -79,7 +76,6 @@ export default function SearchBar() {
     }
   }
 
-  // Keyboard navigation
   function handleKeyDown(e) {
     if (!showDropdown) return;
 
@@ -95,7 +91,6 @@ export default function SearchBar() {
     }
   }
 
-  // Close dropdown if clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -123,7 +118,6 @@ export default function SearchBar() {
                 onKeyDown={handleKeyDown}
               />
               {search ? (
-                // Show clear icon when there's text
                 <div
                   className={styles.clear__icon}
                   onClick={() => setSearch("")}
@@ -132,7 +126,6 @@ export default function SearchBar() {
                   <MdClear />
                 </div>
               ) : (
-                // Show search icon when empty
                 <div
                   className={styles.search__icon}
                   onClick={handleEnterSearch}

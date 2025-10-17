@@ -37,7 +37,7 @@ export default function Success() {
           marginTop: "20px",
           padding: "10px 20px",
           backgroundColor: "#2bd97c",
-          color: "#fff",
+          color: "#032b41",
           border: "none",
           borderRadius: "5px",
           cursor: "pointer",

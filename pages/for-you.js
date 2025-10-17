@@ -18,22 +18,19 @@ export default function ForYou() {
     typeof window !== "undefined" ? window.innerWidth : 1000
   );
 
-  // Update window width on resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Fetch books on mount
   useEffect(() => {
     dispatch(fetchBooks("selected"));
     dispatch(fetchBooks("recommended"));
     dispatch(fetchBooks("suggested"));
   }, [dispatch]);
 
-  // Collapse sidebar if window is less than 550px
-  const sidebarCollapsed = windowWidth < 550;
+  const sidebarCollapsed = windowWidth < 768;
 
   return (
     <div

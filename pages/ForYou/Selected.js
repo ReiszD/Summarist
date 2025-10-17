@@ -30,7 +30,6 @@ export default function Selected({ selected }) {
             className={styles.selected__book_wrapper}
             style={{ position: "relative" }}
           >
-            {/* Hidden audio */}
             <audio
               hidden
               src={book.audioLink || "/placeholder-audio.mp3"}
@@ -54,7 +53,7 @@ export default function Selected({ selected }) {
                     src={book.imageLink}
                     alt={book.title}
                     onLoad={() => handleLoad(book.id)}
-                    style={{ opacity: isLoaded ? 1 : 0 }} // hide until loaded
+                    style={{ opacity: isLoaded ? 1 : 0 }}
                   />
                 </figure>
 
@@ -82,22 +81,16 @@ export default function Selected({ selected }) {
                 </div>
               </div>
             </a>
-
-            {/* Skeleton overlay for text/content */}
             {!isLoaded && (
               <div className={styles.selected__skeleton__card}>
                 <div className={styles.selected__skeleton__subtitle}></div>{" "}
-                {/* for subtitle */}
                 <div className={styles.selected__skeleton__content}>
                   <div className={styles.selected__skeleton__image}></div>{" "}
-                  {/* image */}
                   <div className={styles.selected__skeleton__text_wrapper}>
                     <div className={styles.selected__skeleton__text}></div>{" "}
-                    {/* title */}
                     <div
                       className={styles.selected__skeleton__text_short}
                     ></div>{" "}
-                    {/* author/duration */}
                   </div>
                 </div>
               </div>

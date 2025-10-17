@@ -1,9 +1,8 @@
-// redux/loginSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isLoginOpen: false,
-  redirectTo: "/", // default redirect
+  redirectTo: "/",
 };
 
 const loginSlice = createSlice({
@@ -12,11 +11,11 @@ const loginSlice = createSlice({
   reducers: {
     openLogin: (state, action) => {
       state.isLoginOpen = true;
-      state.redirectTo = action.payload || "/"; // allow dynamic redirect
+      state.redirectTo = action.payload || "/";
     },
     closeLogin: (state) => {
       state.isLoginOpen = false;
-      state.redirectTo = "/"; // reset when closed
+      state.redirectTo = "/";
     },
   },
 });

@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// Async thunk to fetch books by category (selected, recommended, etc.)
 export const fetchBooks = createAsyncThunk(
   "books/fetchBooks",
   async (status, { rejectWithValue }) => {
@@ -11,7 +10,6 @@ export const fetchBooks = createAsyncThunk(
       if (!res.ok) throw new Error("Failed to fetch books");
       const data = await res.json();
 
-      // Some APIs wrap the array in { books: [...] }
       return Array.isArray(data) ? data : data.books || [];
     } catch (err) {
       return rejectWithValue(err.message || "Unknown error");
@@ -19,7 +17,6 @@ export const fetchBooks = createAsyncThunk(
   }
 );
 
-// Fetch a single book by ID
 export const fetchBookById = createAsyncThunk(
   "books/fetchBookById",
   async (id, { rejectWithValue }) => {
@@ -47,7 +44,6 @@ const booksSlice = createSlice({
     error: null,
   },
   reducers: {
-    // optional synchronous reducers if needed later
     clearBooks: (state) => {
       state.selected = [];
       state.recommended = [];

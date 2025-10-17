@@ -37,14 +37,13 @@ export default function Library() {
       typeof window !== "undefined" ? window.innerWidth : 1000
     );
   
-    // Update window width on resize
     useEffect(() => {
       const handleResize = () => setWindowWidth(window.innerWidth);
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }, []);
   
-    const sidebarCollapsed = windowWidth < 550;
+    const sidebarCollapsed = windowWidth < 768;
 
   useEffect(() => {
     if (!firebaseUser) return;
@@ -149,14 +148,11 @@ export default function Library() {
       <Sidebar collapsed={sidebarCollapsed} />
       <div className={styles.for__you__row}>
         <div className={styles.for__you__container}>
-          {/* Saved Books Section */}
           <div className={styles.for_you_title}>Saved Books</div>
           <div className={styles.for_you_subtitle}>{library.length} Items</div>
           <div className={styles.for_you_recommended_books}>
             {loading ? renderSkeleton(4) : renderBookList(library)}
           </div>
-
-          {/* Finished Books Section */}
           <div className={styles.for_you_title}>Finished</div>
           <div className={styles.for_you_subtitle}>{finished.length} Items</div>
           <div className={styles.for_you_recommended_books}>

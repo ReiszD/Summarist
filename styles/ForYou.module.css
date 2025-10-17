@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  margin-left: 200px; /* <-- always reserves space for sidebar */
+  margin-left: 200px;
   width: calc(100% - 200px);
 }
 
@@ -11,7 +11,7 @@
   width: 100%;
   margin: 0 auto;
   padding: 0 24px;
-  flex: 1; /* grow to fill space left by sidebar */
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -33,7 +33,6 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  /* width: calc((100% / 3) * 2); */
   background-color: #fbefd6;
   border-radius: 4px;
   padding: 24px;
@@ -137,7 +136,7 @@
 }
 
 .selected__skeleton__subtitle {
-  width: 40%; /* match real subtitle width */
+  width: 40%;
   height: 16px;
   background-color: #e0e0e0;
   border-radius: 4px;
@@ -195,9 +194,9 @@
   width: fit-content;
   height: 18px;
   padding: 0 8px;
-  /* position: absolute;
-    top: 0;
-    right: 0; */
+  position: absolute;
+  top: 0;
+  right: 0;
   color: #fff;
   font-size: 10px;
   display: flex;
@@ -207,16 +206,16 @@
 
 .for_you_recommended_books {
   display: flex;
-  flex-direction: row; /* force horizontal */
-  flex-wrap: nowrap; /* prevent stacking */
+  flex-direction: row;
+  flex-wrap: nowrap;
   overflow-x: auto;
   gap: 16px;
-  scroll-snap-type: x mandatory; /* combine properly */
+  scroll-snap-type: x mandatory;
   margin-bottom: 32px;
 }
 
 .for_you_recommended_books_link {
-  flex: 0 0 auto; /* prevent shrinking */
+  flex: 0 0 auto;
   max-width: 200px;
   scroll-snap-align: start;
   text-decoration: none;
@@ -298,17 +297,6 @@
   border-radius: 4px;
   animation: pulse 1.5s infinite;
 }
-
-/* .recommended__skeleton__pill {
-  background-color: #e0e0e0;
-  color: transparent;
-  width: 50px;
-  height: 20px;
-  border-radius: 10px;
-  position: absolute;
-  top: 8px;
-  left: 8px;
-} */
 
 .recommended__skeleton__text {
   width: 100%;

@@ -1,4 +1,3 @@
-// components/LoginWrapper.js
 import { useSelector, useDispatch } from "react-redux";
 import Login from "@/pages/Home/Login";
 import { closeLogin } from "@/redux/loginSlice";

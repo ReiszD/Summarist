@@ -1,4 +1,3 @@
-// pages/player/[id].js
 import styles from "@/styles/Player.module.css";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
@@ -30,7 +29,6 @@ export default function Audio() {
 
   const audioRef = useRef(null);
 
-  // Track Firebase user
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) =>
       setFirebaseUser(user)
@@ -38,7 +36,6 @@ export default function Audio() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch book by ID
   useEffect(() => {
     if (!id) return;
     const foundBook = allBooks.find((b) => b.id === id);
@@ -46,12 +43,10 @@ export default function Audio() {
     else dispatch(fetchBookById(id));
   }, [id, allBooks, dispatch]);
 
-  // Update when currentBook is fetched
   useEffect(() => {
     if (currentBook && currentBook.id === id) setBook(currentBook);
   }, [currentBook, id]);
 
-  // Handle audio events
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -110,7 +105,6 @@ export default function Audio() {
     setCurrentTime(newTime);
   };
 
-  // Font size logic
   useEffect(() => {
     const savedSize = localStorage.getItem("bookFontSize");
     if (savedSize) setFontSize(savedSize);
@@ -147,14 +141,13 @@ export default function Audio() {
     typeof window !== "undefined" ? window.innerWidth : 1000
   );
 
-  // Update window width on resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const sidebarCollapsed = windowWidth < 550;
+  const sidebarCollapsed = windowWidth < 768;
 
   const isLoading = !book;
 
@@ -204,7 +197,6 @@ export default function Audio() {
         ) : (
           book && (
             <>
-              {/* Book Summary */}
               <div className={styles.audio__book__summary}>
                 <div className={styles.audio__book__summary__title}>
                   {book.title}
@@ -213,8 +205,6 @@ export default function Audio() {
                   {book.summary}
                 </div>
               </div>
-
-              {/* Audio Player */}
               <div className={styles.audio__player__wrapper}>
                 <audio ref={audioRef} src={book.audioLink}></audio>
 

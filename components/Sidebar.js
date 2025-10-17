@@ -48,7 +48,7 @@ export default function Sidebar({
     } else {
       dispatch(openLogin("/for-you"));
     }
-    setMenuOpen(false); // close mobile menu after login/logout
+    setMenuOpen(false);
   };
 
   useEffect(() => {
@@ -110,8 +110,6 @@ export default function Sidebar({
       <button className={styles.btn__menu} onClick={toggleMenu}>
         {menuOpen ? <IoMdClose /> : <FaBars />}
       </button>
-
-      {/* Mobile menu backdrop */}
       <div
         className={`${styles.sidebar__backdrop} ${menuOpen ? styles.open : ""}`}
       >
@@ -154,8 +152,6 @@ export default function Sidebar({
           </div>
         </div>
       </div>
-
-      {/* Desktop sidebar */}
       <div className={styles.sidebar__menu}>
         <div className={styles.sidebar__logo}>
           <figure>

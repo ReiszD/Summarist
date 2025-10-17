@@ -1,4 +1,3 @@
-// pages/books/[id].js
 import styles from "@/styles/Books.module.css";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
@@ -42,7 +41,6 @@ export default function BookPage() {
   const [isInLibrary, setIsInLibrary] = useState(false);
   const [subscriptionPlan, setSubscriptionPlan] = useState("free");
 
-  // ----------------------- Audio Duration -----------------------
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -52,13 +50,11 @@ export default function BookPage() {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
   }, [book]);
 
-  // ----------------------- Auth Listener -----------------------
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
 
       if (user && book?.id) {
-        // Check if book is in library immediately after login
         const savedBooks = await getUserLibrary(user.uid);
         const exists = savedBooks.some((b) => b.bookId === book.id);
         setIsInLibrary(exists);
@@ -67,7 +63,6 @@ export default function BookPage() {
     return () => unsubscribe();
   }, [book?.id]);
 
-  // ----------------------- Subscription Listener -----------------------
   useEffect(() => {
     if (!firebaseUser?.uid) return;
 
@@ -97,7 +92,6 @@ export default function BookPage() {
     return () => unsubscribe();
   }, [firebaseUser?.uid]);
 
-  // ----------------------- Add/Remove Library -----------------------
   const handleLibraryToggle = async () => {
     if (!firebaseUser) {
       dispatch(openLogin());
@@ -117,7 +111,6 @@ export default function BookPage() {
     setIsInLibrary(true);
   };
 
-  // ----------------------- Fetch Book -----------------------
   useEffect(() => {
     if (!id) return;
     const foundBook = allBooks.find((b) => b.id === id);
@@ -137,7 +130,6 @@ export default function BookPage() {
       : []
     : [];
 
-  // ----------------------- Read/Listen -----------------------
   const handleClick = (type = "listen") => {
     if (!firebaseUser) {
       sessionStorage.setItem("loginRedirect", `/player/${id}`);
@@ -147,7 +139,7 @@ export default function BookPage() {
 
     if (book.subscriptionRequired) {
       const planRank = { free: 0, premium: 1, premium_plus: 2 };
-      const currentPlan = subscriptionPlan; // reactive value
+      const currentPlan = subscriptionPlan;
       const requiredPlan = (
         typeof book.subscriptionRequired === "string"
           ? book.subscriptionRequired
@@ -166,18 +158,17 @@ export default function BookPage() {
     router.push(`/player/${id}`);
   };
 
-    const [windowWidth, setWindowWidth] = useState(
+  const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1000
   );
 
-  // Update window width on resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const sidebarCollapsed = windowWidth < 550;
+  const sidebarCollapsed = windowWidth < 768;
 
   const isLoading = !book;
 
@@ -192,18 +183,14 @@ export default function BookPage() {
       {isLoginOpen && <Login onClose={() => dispatch(closeLogin())} />}
       <SearchBar />
       <Sidebar collapsed={sidebarCollapsed} />
-
       <div className={styles.books__row}>
         {isLoading ? (
-          // Skeleton for image, title, author, and a block of text
           <div className={styles.books__container}>
             <div className={styles.inner__wrapper}>
               <div className={styles.inner__book}>
                 <div className={styles.book__skeleton__title}></div>
                 <div className={styles.book__skeleton__author}></div>
                 <div className={styles.book__skeleton__subtitle}></div>
-
-                {/* Description skeleton - mimic multiple paragraphs */}
                 <div className={styles.book__skeleton__description_block}>
                   <div
                     className={styles.book__skeleton__description__title}
@@ -241,7 +228,6 @@ export default function BookPage() {
                     <div className={styles.inner__book__subtitle}>
                       {book.subTitle}
                     </div>
-
                     <div className={styles.inner__book__wrapper}>
                       <div className={styles.inner__book__description_wrapper}>
                         <div className={styles.inner__book__description}>
@@ -265,8 +251,6 @@ export default function BookPage() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Read & Listen Buttons */}
                     <div className={styles.inner__book__read__btn_wrapper}>
                       <button
                         className={styles.inner__book__read__btn}
@@ -281,8 +265,6 @@ export default function BookPage() {
                         <MdMicNone /> Listen
                       </button>
                     </div>
-
-                    {/* Add to Library */}
                     <div
                       className={`${styles.inner__book__bookmark} ${
                         isInLibrary ? styles.added__bookmark : ""
@@ -300,8 +282,6 @@ export default function BookPage() {
                         </>
                       )}
                     </div>
-
-                    {/* Tags */}
                     <div className={styles.inner__book__tags__wrapper}>
                       {tagsArray.map((tag, i) => (
                         <div key={i} className={styles.inner__book__tag}>
@@ -309,8 +289,6 @@ export default function BookPage() {
                         </div>
                       ))}
                     </div>
-
-                    {/* Book Description */}
                     <div className={styles.inner__book__book_description}>
                       {book.bookDescription}
                     </div>
@@ -321,10 +299,9 @@ export default function BookPage() {
                       {book.authorDescription}
                     </div>
                   </div>
-
                   <div className={styles.inner__book__img_wrapper}>
                     <figure className={styles.book__image__wrapper}>
-                      <img src={book.imageLink} alt="book pic" />
+                      <img src={book.imageLink} alt="book pic" className={styles.book__img} />
                     </figure>
                   </div>
                 </div>

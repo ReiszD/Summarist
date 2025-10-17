@@ -16,8 +16,8 @@ export default function Settings() {
   const user = useSelector((state) => state?.user?.user || null);
   const isLoginOpen = useSelector((state) => state.login.isLoginOpen);
 
-  const [subscriptionPlan, setSubscriptionPlan] = useState(null); // null until fetched
-  const [loading, setLoading] = useState(true); // loading state for skeleton
+  const [subscriptionPlan, setSubscriptionPlan] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -45,7 +45,7 @@ export default function Settings() {
         } else {
           setSubscriptionPlan("Basic");
         }
-        setLoading(false); // stop skeleton
+        setLoading(false);
       },
       (error) => {
         console.error("Error fetching subscription:", error);
@@ -61,14 +61,13 @@ export default function Settings() {
     typeof window !== "undefined" ? window.innerWidth : 1000
   );
 
-  // Update window width on resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const sidebarCollapsed = windowWidth < 550;
+  const sidebarCollapsed = windowWidth < 768;
 
   return (
     <div
@@ -86,7 +85,6 @@ export default function Settings() {
           <div className={styles.settings__section__title}>Settings</div>
 
           {loading ? (
-            // Skeleton loader over settings content
             <>
               <div className={styles.settings__skeleton__card}>
                 <div className={styles.settings__skeleton__subtitle}></div>
@@ -99,7 +97,6 @@ export default function Settings() {
               </div>
             </>
           ) : user ? (
-            // Logged-in user → show subscription info and email
             <>
               <div className={styles.setting__content}>
                 <div
@@ -124,7 +121,6 @@ export default function Settings() {
               </div>
             </>
           ) : (
-            // Not logged in → show login prompt and modal
             <div className={styles.settings__login__wrapper}>
               <Image
                 src={login__image}

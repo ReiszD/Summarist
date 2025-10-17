@@ -59,7 +59,6 @@ export default function Plan() {
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   );
 
-  // ✅ Firestore subscription listener (the *correct* premium check)
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -75,7 +74,6 @@ export default function Plan() {
     return unsubscribe;
   }, [user?.uid]);
 
-  // ✅ Redirect premium users away from plan page
   useEffect(() => {
     if (isPremium) {
       router.push("/for-you");
@@ -128,7 +126,6 @@ export default function Plan() {
   return (
     <div className={`${styles.plan__wrapper} ${styles.wrapper__full}`}>
       <div className={styles.plan}>
-        {/* Plan Header */}
         <div className={styles.plan__header__wrapper}>
           <div className={styles.plan__header}>
             <div className={styles.plan__title}>
@@ -146,12 +143,8 @@ export default function Plan() {
             </figure>
           </div>
         </div>
-
-        {/* Features + Plan Cards */}
         <div className={styles.plan__row}>
           <div className={styles.plan__container}>
-            {/* ... your existing UI below stays exactly the same ... */}
-
             <div className={styles.plan__features__wrapper}>
               <div className={styles.plan__features}>
                 <figure className={styles.plan__features__icon}>
@@ -178,13 +171,9 @@ export default function Plan() {
                 </div>
               </div>
             </div>
-
-            {/* Plan Selection */}
             <div className={styles.features__section__title}>
               Choose the plan that fits you
             </div>
-
-            {/* Premium Plus Yearly */}
             <div
               className={`${styles.plan__card} ${
                 activePlan === "Premium Plus Yearly"
@@ -212,13 +201,9 @@ export default function Plan() {
                 </div>
               </div>
             </div>
-
-            {/* Separator */}
             <div className={styles.plan__card__separator}>
               <div className="plan__separator">or</div>
             </div>
-
-            {/* Premium Monthly */}
             <div
               className={`${styles.plan__card} ${
                 activePlan === "Premium Monthly"
@@ -240,8 +225,6 @@ export default function Plan() {
                 <div className={styles.plan__card__text}>No trial included</div>
               </div>
             </div>
-
-            {/* CTA Button */}
             <div className={styles.plan__card__cta}>
               <span className={styles.btn__wrapper}>
                 <button
@@ -249,7 +232,7 @@ export default function Plan() {
                   className={`${styles.plan__btn} ${
                     activePlan ? styles.plan__btn__active : ""
                   }`}
-                  disabled={isPremium} // optional: disable if already premium
+                  disabled={isPremium}
                 >
                   {isPremium
                     ? "You are already Premium!"

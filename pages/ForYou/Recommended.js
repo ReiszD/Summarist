@@ -30,9 +30,8 @@ export default function Recommended({ recommended }) {
               key={recommend.id}
               className={styles.for_you_recommended_books_link}
               href={`/books/${recommend.id}`}
-              style={{ position: "relative" }} // <-- relative container
+              style={{ position: "relative" }}
             >
-              {/* Skeleton placeholder */}
               {!isLoaded && (
                 <div className={styles.recommended__skeleton__card}>
                   <div className={styles.recommended__skeleton__image}></div>
