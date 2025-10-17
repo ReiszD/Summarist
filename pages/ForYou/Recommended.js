@@ -4,7 +4,7 @@ import Link from "next/link";
 import { formatTime } from "@/components/formatTime";
 import { useState } from "react";
 
-export default function Recommended({ recommended }) {
+export default function Recommended({ recommended = [] }) {
   const [durations, setDurations] = useState({});
   const [loading, setLoading] = useState({});
 

@@ -4,7 +4,7 @@ import { formatTime } from "@/components/formatTime";
 import { useState } from "react";
 import Link from "next/link";
 
-export default function Selected({ selected }) {
+export default function Selected({ selected = [] }) {
   const [durations, setDurations] = useState({});
   const [loading, setLoading] = useState({});
 

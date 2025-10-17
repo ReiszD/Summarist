@@ -5,7 +5,7 @@ import { CiStar } from "react-icons/ci";
 import { formatTime } from "@/components/formatTime";
 import { useEffect, useRef, useState } from "react";
 
-export default function Suggested({ suggested }) {
+export default function Suggested({ suggested = [] }) {
   const [durations, setDurations] = useState({});
   // const audioRef = useRef(null);
   const [loading, setLoading] = useState({});
